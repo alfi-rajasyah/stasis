@@ -40,3 +40,7 @@ next-env.d.ts
 /data/*.db
 .gstack/
 .env
+
+# PWA build output
+public/sw.js
+public/workbox-*.js
