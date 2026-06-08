@@ -8,7 +8,7 @@ echo "========================================"
 
 # ── 1. System dependencies ──
 echo ""
-echo "[1/6] Checking system dependencies..."
+echo "[1/5] Checking system dependencies..."
 
 if ! command -v node &>/dev/null; then
     echo "  Installing Node.js 20..."
@@ -22,26 +22,21 @@ if ! command -v git &>/dev/null; then
 fi
 echo "  Git: $(git --version | awk '{print $3}') ✓"
 
-# Native module build tools
-if ! dpkg -l build-essential &>/dev/null; then
-    echo "  Installing build tools (gcc, g++, make)..."
-    sudo apt install -y build-essential python3
-fi
-echo "  Build tools: installed ✓"
+echo "  All system dependencies satisfied ✓"
 
 # ── 2. Clone if not already here ──
 if [ ! -f "package.json" ]; then
     echo ""
-    echo "[2/6] Cloning repository..."
+    echo "[2/5] Cloning repository..."
     git clone https://github.com/alfi-rajasyah/stasis.git .
 else
     echo ""
-    echo "[2/6] Already in project directory ✓"
+    echo "[2/5] Already in project directory ✓"
 fi
 
 # ── 3. Environment variables ──
 echo ""
-echo "[3/6] Setting up environment..."
+echo "[3/5] Setting up environment..."
 
 if [ ! -f ".env" ]; then
     cp .env.example .env
@@ -70,14 +65,13 @@ fi
 
 # ── 4. Install npm dependencies ──
 echo ""
-echo "[4/6] Installing npm packages..."
+echo "[4/5] Installing npm packages..."
 npm install
 
 # ── 5. Database ──
 echo ""
-echo "[5/6] Setting up database..."
+echo "[5/5] Setting up database..."
 mkdir -p data
-npx prisma generate
 npx prisma migrate dev --name init 2>/dev/null || npx prisma migrate deploy
 npx prisma db seed 2>/dev/null || echo "  Seed already applied, skipping"
 

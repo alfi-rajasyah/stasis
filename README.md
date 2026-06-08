@@ -14,6 +14,10 @@ Personal finance manager. Track subscriptions, bills, debts, and budget — with
 - **PWA** — Install on phone, works offline
 - **Dark mode** — Dark premium design throughout
 
+## Requirements
+
+- **Node.js 18+** and **git**
+
 ## Tech Stack
 
 | Layer | Technology |

@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import { signIn } from "next-auth/react";
 
 export default function LoginPage() {
@@ -8,7 +7,7 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center px-5">
       <div className="w-full max-w-sm space-y-8 text-center">
         <div className="space-y-4">
-          <Image src="/icon-192.png" alt="Stasis" width={80} height={80} className="mx-auto rounded-2xl" />
+          <img src="/icon-192.png" alt="Stasis" className="mx-auto w-20 h-20 rounded-2xl" />
           <h1 className="text-2xl font-semibold tracking-tight">Stasis</h1>
           <p className="text-sm text-white/40">Personal Finance Manager</p>
         </div>
