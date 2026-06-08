@@ -1,0 +1,14 @@
+Task 7 - tRPC Client Infrastructure
+=====================================
+Date: 2026-06-08
+
+Files created:
+- src/trpc/client.ts       — typed tRPC client via createTRPCReact<AppRouter>()
+- src/trpc/react.tsx        — TRPCProvider wrapping trpc.Provider + QueryClientProvider
+- src/trpc/server.ts        — server-side caller via createCallerFactory(appRouter)()
+
+Type check result:
+  npx tsc --noEmit   → PASS (no errors)
+
+QA scenario verification:
+  All three files exist and compile.
