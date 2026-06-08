@@ -37,6 +37,32 @@ Personal finance manager. Track subscriptions, bills, debts, and budget — with
 curl -fsSL https://raw.githubusercontent.com/alfi-rajasyah/stasis/master/setup.sh | bash
 ```
 
+## Production
+
+The app uses `pm2` to run persistently:
+
+```bash
+npm install -g pm2
+pm2 start npm --name stasis -- start
+pm2 save
+pm2 startup   # auto-start on reboot
+```
+
+| Command | Purpose |
+|---|---|
+| `pm2 status` | Check if app is running |
+| `pm2 logs stasis` | View logs |
+| `pm2 restart stasis` | Restart after updates |
+
+### Update workflow
+
+```bash
+git pull
+npm install       # only if package.json changed
+npm run build
+pm2 restart stasis
+```
+
 ## Environment
 
 ```env
