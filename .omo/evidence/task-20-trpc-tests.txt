@@ -1,0 +1,25 @@
+
+ RUN  v4.1.8 /Users/alfirajasyah/Documents/Vibe-Code/Stasis
+
+ ✓ src/server/routers/categories.test.ts > categories router > list returns categories 245ms
+ ✓ src/server/routers/income.test.ts > income router > list returns array 255ms
+ ✓ src/server/routers/dashboard.test.ts > dashboard router > getSummary returns correct shape 268ms
+ ✓ src/server/routers/dashboard.test.ts > dashboard router > getSummary handles zero income (no NaN) 3ms
+ ✓ src/server/routers/categories.test.ts > categories router > list returns categories with correct shape 2ms
+ ✓ src/server/routers/categories.test.ts > categories router > add creates new category 28ms
+ ✓ src/server/routers/categories.test.ts > categories router > add rejects invalid hex color 1ms
+ ✓ src/server/routers/categories.test.ts > categories router > add rejects empty name 0ms
+ ✓ src/server/routers/income.test.ts > income router > add creates income entry with valid INCOME category 47ms
+ ✓ src/server/routers/income.test.ts > income router > add rejects negative amount 2ms
+ ✓ src/server/routers/income.test.ts > income router > add rejects non-INCOME category 4ms
+ ✓ src/server/routers/budget.test.ts > budget router > getAll returns expense categories with allocations 6ms
+ ✓ src/server/routers/budget.test.ts > budget router > set creates new allocation 3ms
+ ✓ src/server/routers/budget.test.ts > budget router > set updates existing allocation 4ms
+ ✓ src/server/routers/budget.test.ts > budget router > set rejects negative amount 2ms
+ ✓ src/server/routers/budget.test.ts > budget router > set rejects INCOME category 4ms
+
+ Test Files  4 passed (4)
+      Tests  16 passed (16)
+   Start at  15:26:49
+   Duration  1.48s (transform 316ms, setup 347ms, import 740ms, tests 1.19s, environment 2.94s)
+
