@@ -78,7 +78,7 @@ export default function BudgetPage() {
         <div className="bg-destructive/10 border border-destructive/30 text-destructive rounded-xl p-4">
           <p className="font-semibold">⚠️ Allocations exceed income</p>
           <p className="text-sm">
-            You've allocated {formatIDR(totalAllocated)} but only have{' '}
+            You&apos;ve allocated {formatIDR(totalAllocated)} but only have{' '}
             {formatIDR(totalIncome)}. Reduce by{' '}
             {formatIDR(totalAllocated - totalIncome)}.
           </p>

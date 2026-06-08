@@ -2,7 +2,6 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { createCallerFactory } from '@/server/trpc';
 import { appRouter } from '@/server/root';
 import { createTRPCContext } from '@/server/context';
-import type { AppRouter } from '@/server/root';
 
 const createCaller = createCallerFactory(appRouter);
 let caller: Awaited<ReturnType<typeof createCaller>>;
