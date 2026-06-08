@@ -16,6 +16,18 @@ export const categoriesRouter = router({
     .mutation(async ({ ctx, input }) => {
       return ctx.prisma.category.create({ data: input });
     }),
+  getUsage: publicProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const [subscriptions, bills, debts, income, budget] = await Promise.all([
+        ctx.prisma.subscription.count({ where: { categoryId: input.id } }),
+        ctx.prisma.recurringBill.count({ where: { categoryId: input.id } }),
+        ctx.prisma.debt.count({ where: { categoryId: input.id } }),
+        ctx.prisma.incomeEntry.count({ where: { categoryId: input.id } }),
+        ctx.prisma.budgetAllocation.count({ where: { categoryId: input.id } }),
+      ]);
+      return { subscriptions, bills, debts, income, budget };
+    }),
   delete: publicProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
@@ -27,7 +39,13 @@ export const categoriesRouter = router({
       const debts = await ctx.prisma.debt.count({ where: { categoryId: input.id } });
       const total = entries + allocs + subs + bills + debts;
       if (total > 0) {
-        throw new Error(`Cannot delete: category is used by ${total} entries`);
+        const parts: string[] = [];
+        if (entries > 0) parts.push(`${entries} ${entries === 1 ? 'income entry' : 'income entries'}`);
+        if (allocs > 0) parts.push(`${allocs} ${allocs === 1 ? 'budget allocation' : 'budget allocations'}`);
+        if (subs > 0) parts.push(`${subs} ${subs === 1 ? 'subscription' : 'subscriptions'}`);
+        if (bills > 0) parts.push(`${bills} ${bills === 1 ? 'bill' : 'bills'}`);
+        if (debts > 0) parts.push(`${debts} ${debts === 1 ? 'debt' : 'debts'}`);
+        throw new Error(`Cannot delete: category is used by ${parts.join(', ')}`);
       }
       return ctx.prisma.category.delete({ where: { id: input.id } });
     }),

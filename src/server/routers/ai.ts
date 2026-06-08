@@ -1,6 +1,14 @@
 import { z } from 'zod';
 import { publicProcedure, router } from '../trpc';
 
+function checkModelKeyConfigured(model: string): boolean {
+  if (model.startsWith('deepseek')) return !!process.env.DEEPSEEK_API_KEY;
+  if (model.startsWith('gpt') || model.startsWith('o1') || model.startsWith('o3'))
+    return !!process.env.OPENAI_API_KEY;
+  if (model.startsWith('claude')) return !!process.env.ANTHROPIC_API_KEY;
+  return false;
+}
+
 export const aiRouter = router({
   conversations: publicProcedure.query(async ({ ctx }) => {
     const conversations = await ctx.prisma.aiConversation.findMany({
@@ -81,5 +89,31 @@ export const aiRouter = router({
         });
       }
       return { success: true };
+    }),
+
+  getSetting: publicProcedure
+    .input(z.object({ key: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const setting = await ctx.prisma.setting.findUnique({
+        where: { key: input.key },
+      });
+      return { value: setting?.value ?? null };
+    }),
+
+  setSetting: publicProcedure
+    .input(z.object({ key: z.string(), value: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      await ctx.prisma.setting.upsert({
+        where: { key: input.key },
+        update: { value: input.value },
+        create: { key: input.key, value: input.value },
+      });
+      return { success: true };
+    }),
+
+  checkModelAccess: publicProcedure
+    .input(z.object({ model: z.string() }))
+    .query(async ({ input }) => {
+      return { available: checkModelKeyConfigured(input.model) };
     }),
 });

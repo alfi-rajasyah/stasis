@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Send, Sparkles, Plus } from 'lucide-react';
 import { trpc } from '@/trpc/client';
 import { AVAILABLE_MODELS, type SupportedModel } from '@/lib/ai-provider';
+import { toast } from 'sonner';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -26,6 +27,8 @@ export default function ChatPage() {
     { enabled: !!conversationId }
   );
   const addMsg = trpc.ai.addMessages.useMutation();
+  const { data: modelSetting } = trpc.ai.getSetting.useQuery({ key: 'defaultModel' });
+  const setModelSetting = trpc.ai.setSetting.useMutation();
   const utils = trpc.useUtils();
 
   // Sync messages from backend when switching conversations
@@ -42,6 +45,13 @@ export default function ChatPage() {
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
+
+  // Load persisted model preference
+  useEffect(() => {
+    if (modelSetting?.value) {
+      setModel(modelSetting.value as SupportedModel);
+    }
+  }, [modelSetting]);
 
   const startNew = async () => {
     const conv = await createConv.mutateAsync();
@@ -189,7 +199,11 @@ export default function ChatPage() {
         <div className="flex items-center gap-2">
           <select
             value={model}
-            onChange={e => setModel(e.target.value as SupportedModel)}
+            onChange={e => {
+              const newModel = e.target.value as SupportedModel;
+              setModel(newModel);
+              setModelSetting.mutate({ key: 'defaultModel', value: newModel });
+            }}
             className="bg-white/[0.04] ring-1 ring-white/[0.06] rounded-lg px-2 py-1 text-xs text-white/60 outline-none cursor-pointer hover:bg-white/[0.06] transition-all appearance-none"
           >
             {AVAILABLE_MODELS.map(m => (

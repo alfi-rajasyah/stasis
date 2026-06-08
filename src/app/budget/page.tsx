@@ -20,6 +20,9 @@ export default function BudgetPage() {
       utils.dashboard.getSummary.invalidate();
       setEditingId(null);
     },
+    onError: () => {
+      setEditingId(null);
+    },
   });
 
   const handleSave = (categoryId: string) => {
