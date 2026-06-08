@@ -14,6 +14,7 @@ const tabs = [
 
 export function TabBar() {
   const pathname = usePathname();
+  if (pathname === '/login') return null;
 
   return (
     <nav className="fixed bottom-0 inset-x-0 z-50 bg-black/60 backdrop-blur-xl saturate-150 border-t border-white/[0.04] pb-[env(safe-area-inset-bottom)]">
