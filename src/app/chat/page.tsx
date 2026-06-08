@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Send, Sparkles, Plus } from 'lucide-react';
 import { trpc } from '@/trpc/client';
+import { AVAILABLE_MODELS, type SupportedModel } from '@/lib/ai-provider';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -14,6 +15,7 @@ export default function ChatPage() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
+  const [model, setModel] = useState<SupportedModel>('deepseek-chat');
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -63,6 +65,7 @@ export default function ChatPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           messages: newMessages.map(m => ({ role: m.role, content: m.content })),
+          model,
         }),
       });
 
@@ -183,12 +186,22 @@ export default function ChatPage() {
           </svg>
         </button>
         <h2 className="text-sm font-medium text-white/60">AI Assistant</h2>
-        <button
-          onClick={startNew}
-          className="text-white/40 hover:text-white/60 transition-all cursor-pointer"
-        >
-          <Plus size={20} />
-        </button>
+        <div className="flex items-center gap-2">
+          <select
+            value={model}
+            onChange={e => setModel(e.target.value as SupportedModel)}
+            className="bg-white/[0.04] ring-1 ring-white/[0.06] rounded-lg px-2 py-1 text-xs text-white/60 outline-none cursor-pointer hover:bg-white/[0.06] transition-all appearance-none"
+          >
+            {AVAILABLE_MODELS.map(m => (
+              <option key={m.value} value={m.value} className="bg-[#141417] text-white/80">
+                {m.label}
+              </option>
+            ))}
+          </select>
+          <button onClick={startNew} className="text-white/40 hover:text-white/60 transition-all cursor-pointer">
+            <Plus size={20}/>
+          </button>
+        </div>
       </div>
 
       {/* Messages */}

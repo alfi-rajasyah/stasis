@@ -1,9 +1,7 @@
-import { createDeepSeek } from '@ai-sdk/deepseek';
 import { streamText } from 'ai';
 import { z } from 'zod';
 import { prisma } from '@/server/db';
-
-const deepseek = createDeepSeek({ apiKey: process.env.DEEPSEEK_API_KEY! });
+import { getModel, AVAILABLE_MODELS, type SupportedModel } from '@/lib/ai-provider';
 
 const fmt = (n: number) => 'Rp ' + n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 
@@ -35,9 +33,14 @@ const incomeSchema = z.object({
 
 const emptySchema = z.object({});
 
+export async function GET() {
+  return Response.json({ models: AVAILABLE_MODELS });
+}
+
 export async function POST(req: Request) {
   try {
-    const { messages, conversationId } = await req.json();
+    const { messages, conversationId, model } = await req.json();
+    const selectedModel: SupportedModel = model || 'deepseek-chat';
     const now = new Date();
     const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
@@ -76,7 +79,7 @@ Current financial snapshot (${month}):
 Use the available tools to help the user. When they describe data in natural language ("Netflix 149k per month"), parse it and create entries. Always confirm what you've done. Keep responses brief and useful.`;
 
     const result = streamText({
-      model: deepseek('deepseek-chat'),
+      model: getModel(selectedModel),
       system: systemPrompt,
       messages: messages.map(({ role, content, tool_call_id, tool_calls }: any) => ({
         role,

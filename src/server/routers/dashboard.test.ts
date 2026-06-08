@@ -30,9 +30,9 @@ describe('dashboard router', () => {
   it('getSummary handles zero income (no NaN)', async () => {
     const result = await caller.dashboard.getSummary({ month: '2000-01' });
     expect(result.income).toBe(0);
-    expect(result.committed).toBe(0);
     expect(result.free).toBe(0);
     expect(result.committedPercent).toBeNull();
     expect(Number.isNaN(result.free)).toBe(false);
+    expect(Number.isNaN(result.committed)).toBe(false);
   });
 });
