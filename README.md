@@ -34,11 +34,7 @@ Personal finance manager. Track subscriptions, bills, debts, and budget — with
 ## Quick Start
 
 ```bash
-npm install
-cp .env.example .env
-npx prisma migrate dev
-npx prisma db seed
-npm run dev
+curl -fsSL https://raw.githubusercontent.com/alfi-rajasyah/stasis/master/setup.sh | bash
 ```
 
 ## Environment
