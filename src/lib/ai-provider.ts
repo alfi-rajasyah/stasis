@@ -25,15 +25,15 @@ export const AVAILABLE_MODELS: { value: SupportedModel; label: string; provider:
 export function getModel(modelId: SupportedModel) {
   if (modelId.startsWith('deepseek')) {
     const deepseek = createDeepSeek({ apiKey: process.env.DEEPSEEK_API_KEY! });
-    return deepseek(modelId as any);
+    return deepseek(modelId as string);
   }
   if (modelId.startsWith('gpt') || modelId.startsWith('o1') || modelId.startsWith('o3')) {
     const openai = createOpenAI({ apiKey: process.env.OPENAI_API_KEY! });
-    return openai(modelId as any);
+    return openai(modelId as string);
   }
   if (modelId.startsWith('claude')) {
     const anthropic = createAnthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
-    return anthropic(modelId as any);
+    return anthropic(modelId as string);
   }
   throw new Error(`Unknown model: ${modelId}`);
 }

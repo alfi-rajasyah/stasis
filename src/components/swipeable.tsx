@@ -1,7 +1,7 @@
 'use client';
 
 import { Trash2 } from 'lucide-react';
-import { useRef, useState, useCallback } from 'react';
+import { useRef, useState } from 'react';
 
 interface SwipeableProps {
   children: React.ReactNode;
@@ -38,7 +38,7 @@ export function Swipeable({ children, onDelete, deleteLabel = 'Delete', classNam
     }
 
     if (isHorizontal.current && dx > 0) {
-      if ('preventDefault' in e && (e as any).cancelable) (e as any).preventDefault();
+      if ('preventDefault' in e && (e as Event).cancelable) (e as Event).preventDefault();
       dragDistance.current = dx;
       setOffset(Math.min(dx, 90));
     }

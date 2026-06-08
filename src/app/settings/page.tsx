@@ -2,7 +2,7 @@
 
 import { trpc } from '@/trpc/client';
 import { useState } from 'react';
-import { Plus, Tag, Globe, Cpu, Info, Trash2, Download } from 'lucide-react';
+import { Plus, Tag, Globe, Cpu, Info, Trash2 } from 'lucide-react';
 import { Swipeable } from '@/components/swipeable';
 
 export default function SettingsPage() {
@@ -49,7 +49,7 @@ export default function SettingsPage() {
             <input value={newName} onChange={e => setNewName(e.target.value)} placeholder="Category name"
               className="w-full bg-white/[0.04] ring-1 ring-white/[0.06] rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/20 outline-none" />
             <div className="flex items-center gap-2">
-              <select value={newType} onChange={e => setNewType(e.target.value as any)}
+              <select value={newType} onChange={e => setNewType(e.target.value as 'INCOME' | 'EXPENSE')}
                 className="bg-white/[0.04] ring-1 ring-white/[0.06] rounded-lg px-3 py-2 text-sm text-white/60 outline-none">
                 <option value="EXPENSE" className="bg-[#141417]">Expense</option>
                 <option value="INCOME" className="bg-[#141417]">Income</option>
@@ -70,8 +70,8 @@ export default function SettingsPage() {
               try {
                 await deleteCat.mutateAsync({ id: cat.id });
                 utils.categories.list.invalidate();
-              } catch (e: any) {
-                alert(e.message);
+              } catch (e) {
+                alert(e instanceof Error ? e.message : 'An error occurred');
               }
             }}>
               <div className="flex items-center gap-3 py-2 px-1 bg-[#141417] rounded-2xl">
@@ -85,8 +85,8 @@ export default function SettingsPage() {
                     try {
                       await deleteCat.mutateAsync({ id: cat.id });
                       utils.categories.list.invalidate();
-                    } catch (err: any) {
-                      alert(err.message);
+                    } catch (err) {
+                      alert(err instanceof Error ? err.message : 'An error occurred');
                     }
                   }}
                   className="p-1 rounded-lg text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-all"

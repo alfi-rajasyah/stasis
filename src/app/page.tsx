@@ -98,7 +98,7 @@ export default function DashboardPage() {
         <p className="text-xs font-medium text-white/40 uppercase tracking-wider mb-3">Upcoming</p>
         {upcomingDues.length > 0 ? (
           <div className="space-y-2">
-            {upcomingDues.slice(0, 5).map((due: any, i: number) => (
+            {upcomingDues.slice(0, 5).map((due: { name: string; amount: number; dueDate: string; type: string }, i: number) => (
               <div key={i} className="flex items-center justify-between text-sm">
                 <span className="text-white/70 truncate mr-2">{due.name}</span>
                 <span className="text-white/50 flex-shrink-0">
@@ -117,7 +117,7 @@ export default function DashboardPage() {
         <p className="text-xs font-medium text-white/40 uppercase tracking-wider mb-3">Debts</p>
         {debts.length > 0 ? (
           <div className="space-y-3">
-            {debts.map((debt: any) => (
+            {debts.map((debt: { id: string; name: string; remainingAmount: number; progressPercent: number; monthsRemaining: number | null }) => (
               <div key={debt.id} className="space-y-1.5">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-white/70">{debt.name}</span>

@@ -81,7 +81,7 @@ Use the available tools to help the user. When they describe data in natural lan
     const result = streamText({
       model: getModel(selectedModel),
       system: systemPrompt,
-      messages: messages.map(({ role, content, tool_call_id, tool_calls }: any) => ({
+      messages: messages.map(({ role, content, tool_call_id, tool_calls }: { role: string; content: string; tool_call_id?: string; tool_calls?: unknown }) => ({
         role,
         content: content ?? '',
         ...(tool_call_id ? { tool_call_id } : {}),

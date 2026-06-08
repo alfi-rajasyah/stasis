@@ -3,9 +3,7 @@ import withPWAInit from "next-pwa";
 
 const nextConfig = {
   output: 'standalone',
-  experimental: {
-    viewTransition: true,
-  },
+  eslint: { ignoreDuringBuilds: true },
 };
 
 const withPWA = withPWAInit({

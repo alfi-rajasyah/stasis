@@ -2,7 +2,6 @@
 
 import { trpc } from '@/trpc/client';
 import { formatIDR } from '@/utils/format';
-import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { useState } from 'react';
 import { AlertTriangle, CircleCheck, Pencil } from 'lucide-react';
