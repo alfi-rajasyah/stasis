@@ -31,6 +31,16 @@ export const budgetRouter = router({
         totalAllocated: allocations.reduce((sum, a) => sum + a.allocatedAmount, 0),
       };
     }),
+  delete: publicProcedure
+    .input(z.object({ categoryId: z.string(), month: z.string().optional() }))
+    .mutation(async ({ ctx, input }) => {
+      const now = new Date();
+      const month = input.month ?? `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      await ctx.prisma.budgetAllocation.deleteMany({
+        where: { categoryId: input.categoryId, month },
+      });
+      return { success: true };
+    }),
   set: publicProcedure
     .input(
       z.object({

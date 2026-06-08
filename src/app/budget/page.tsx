@@ -5,7 +5,7 @@ import { formatIDR } from '@/utils/format';
 import { Input } from '@/components/ui/input';
 import { useState } from 'react';
 import Link from 'next/link';
-import { AlertTriangle, CircleCheck, Pencil, PieChart } from 'lucide-react';
+import { AlertTriangle, CircleCheck, Pencil, PieChart, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function BudgetPage() {
@@ -25,6 +25,14 @@ export default function BudgetPage() {
     },
     onError: () => {
       setEditingId(null);
+    },
+  });
+
+  const deleteAllocation = trpc.budget.delete.useMutation({
+    onSuccess: () => {
+      utils.budget.getAll.invalidate();
+      utils.dashboard.getSummary.invalidate();
+      toast.success('Allocation removed');
     },
   });
 
@@ -132,16 +140,25 @@ export default function BudgetPage() {
                         disabled={setAllocation.isPending}
                       />
                     ) : (
-                      <button
-                        onClick={() => {
-                          setEditingId(cat.id);
-                          setEditValue(String(cat.allocated));
-                        }}
-                        className="flex items-center gap-1 text-sm font-medium text-white/70 hover:text-emerald-400 transition-colors duration-200 cursor-pointer group"
-                      >
-                        {formatIDR(cat.allocated)}
-                        <Pencil size={12} className="text-white/20 group-hover:text-emerald-400/60 transition-colors" />
-                      </button>
+                      <>
+                        <button
+                          onClick={() => {
+                            setEditingId(cat.id);
+                            setEditValue(String(cat.allocated));
+                          }}
+                          className="flex items-center gap-1 text-sm font-medium text-white/70 hover:text-emerald-400 transition-colors duration-200 cursor-pointer group"
+                        >
+                          {formatIDR(cat.allocated)}
+                          <Pencil size={12} className="text-white/20 group-hover:text-emerald-400/60 transition-colors" />
+                        </button>
+                        <button
+                          onClick={() => deleteAllocation.mutate({ categoryId: cat.id })}
+                          className="text-white/20 hover:text-red-400 transition-colors duration-200 cursor-pointer"
+                          disabled={deleteAllocation.isPending}
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </>
                     )}
                   </div>
                 </div>
