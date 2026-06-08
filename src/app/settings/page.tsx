@@ -1,8 +1,8 @@
 'use client';
 
 import { trpc } from '@/trpc/client';
-import { useState } from 'react';
-import { Plus, Tag, Globe, Cpu, Info, Trash2, PackageOpen, Pencil, Wallet } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Plus, Tag, Globe, Cpu, Info, Trash2, PackageOpen, Pencil, Wallet, ChevronDown, ChevronUp } from 'lucide-react';
 import { toast } from 'sonner';
 import { Swipeable } from '@/components/swipeable';
 import { formatIDR } from '@/utils/format';
@@ -109,6 +109,29 @@ export default function SettingsPage() {
   const [newType, setNewType] = useState<'INCOME' | 'EXPENSE'>('EXPENSE');
   const [newColor, setNewColor] = useState('#10B981');
   const [showAdd, setShowAdd] = useState(false);
+  const [categoriesOpen, setCategoriesOpen] = useState(false);
+
+  // ── AI Provider state ──
+  const [aiModel, setAiModel] = useState('');
+  const [aiSaving, setAiSaving] = useState(false);
+  const { data: aiConfig } = trpc.ai.getConfig.useQuery();
+  const setAiSetting = trpc.ai.setSetting.useMutation();
+  const aiUtils = trpc.useUtils();
+
+  useEffect(() => {
+    if (aiConfig) setAiModel(aiConfig.saved.model);
+  }, [aiConfig]);
+
+  async function handleAiSave() {
+    setAiSaving(true);
+    try {
+      await setAiSetting.mutateAsync({ key: 'ai_model', value: aiModel });
+      aiUtils.ai.getConfig.invalidate();
+      toast.success('Model preference saved');
+    } catch {
+      toast.error('Failed to save');
+    } finally { setAiSaving(false); }
+  }
 
   // ── Income state ──
   const [showAddIncome, setShowAddIncome] = useState(false);
@@ -196,59 +219,6 @@ export default function SettingsPage() {
         <h1 className="text-2xl font-semibold tracking-tight mt-1">Preferences</h1>
       </div>
 
-      {/* Categories */}
-      <div className="rounded-2xl bg-white/[0.03] ring-1 ring-white/[0.05] p-5 space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <Tag size={18} className="text-white/40" />
-            <h2 className="text-sm font-medium text-white/60">Categories</h2>
-          </div>
-          <button onClick={() => setShowAdd(!showAdd)}
-            className="p-1.5 rounded-lg bg-white/[0.04] ring-1 ring-white/[0.06] text-white/40 hover:text-white/60 transition-all cursor-pointer">
-            <Plus size={16} />
-          </button>
-        </div>
-
-        {showAdd && (
-          <div className="space-y-3 p-4 rounded-xl bg-white/[0.02] ring-1 ring-white/[0.04]">
-            <input value={newName} onChange={e => setNewName(e.target.value)} placeholder="Category name"
-              className="w-full bg-white/[0.04] ring-1 ring-white/[0.06] rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/20 outline-none" />
-            <div className="flex items-center gap-2">
-              <select value={newType} onChange={e => setNewType(e.target.value as 'INCOME' | 'EXPENSE')}
-                className="bg-white/[0.04] ring-1 ring-white/[0.06] rounded-lg px-3 py-2 text-sm text-white/60 outline-none">
-                <option value="EXPENSE" className="bg-[#141417]">Expense</option>
-                <option value="INCOME" className="bg-[#141417]">Income</option>
-              </select>
-              <input type="color" value={newColor} onChange={e => setNewColor(e.target.value)}
-                className="w-10 h-10 rounded-lg bg-transparent cursor-pointer border-0" />
-              <button onClick={handleAdd} disabled={addCategory.isPending}
-                className="rounded-lg bg-emerald-500/10 ring-1 ring-emerald-500/20 text-emerald-400 px-4 py-2 text-sm font-medium hover:bg-emerald-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
-                {addCategory.isPending ? 'Adding...' : 'Add'}
-              </button>
-            </div>
-          </div>
-        )}
-
-        {isLoading ? (
-          <div className="space-y-2">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="h-12 bg-white/[0.04] rounded-xl animate-pulse" />
-            ))}
-          </div>
-        ) : categories && categories.length === 0 ? (
-          <div className="rounded-xl bg-white/[0.02] ring-1 ring-white/[0.04] p-8 text-center space-y-3">
-            <PackageOpen size={32} className="mx-auto text-white/20" />
-            <p className="text-sm text-white/40">No categories yet. Add your first one.</p>
-          </div>
-        ) : (
-          <div className="space-y-1.5">
-            {categories?.map(cat => (
-              <CategoryRow key={cat.id} cat={cat} />
-            ))}
-          </div>
-        )}
-      </div>
-
       {/* Income */}
       <div className="rounded-2xl bg-white/[0.03] ring-1 ring-white/[0.05] p-5 space-y-4">
         <div className="flex items-center justify-between">
@@ -298,14 +268,94 @@ export default function SettingsPage() {
         <p className="text-xs text-white/30 mt-1 pl-8">All amounts displayed in Rupiah with dot separators</p>
       </div>
 
-      {/* AI Model */}
-      <div className="rounded-2xl bg-white/[0.03] ring-1 ring-white/[0.05] p-5">
+      {/* Categories */}
+      <div className="rounded-2xl bg-white/[0.03] ring-1 ring-white/[0.05] p-5 space-y-4">
+        <div className="flex items-center justify-between">
+          <button onClick={() => setCategoriesOpen(!categoriesOpen)} className="flex items-center gap-2.5 cursor-pointer w-full text-left">
+            <Tag size={18} className="text-white/40" />
+            <h2 className="text-sm font-medium text-white/60 flex-1">Categories</h2>
+            {categoriesOpen ? <ChevronUp size={16} className="text-white/30" /> : <ChevronDown size={16} className="text-white/30" />}
+          </button>
+          {categoriesOpen && (
+            <button onClick={() => setShowAdd(!showAdd)}
+              className="p-1.5 rounded-lg bg-white/[0.04] ring-1 ring-white/[0.06] text-white/40 hover:text-white/60 transition-all cursor-pointer">
+              <Plus size={16} />
+            </button>
+          )}
+        </div>
+
+        {categoriesOpen && (
+          <>
+        {showAdd && (
+          <div className="space-y-3 p-4 rounded-xl bg-white/[0.02] ring-1 ring-white/[0.04]">
+            <input value={newName} onChange={e => setNewName(e.target.value)} placeholder="Category name"
+              className="w-full bg-white/[0.04] ring-1 ring-white/[0.06] rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/20 outline-none" />
+            <div className="flex items-center gap-2">
+              <select value={newType} onChange={e => setNewType(e.target.value as 'INCOME' | 'EXPENSE')}
+                className="bg-white/[0.04] ring-1 ring-white/[0.06] rounded-lg px-3 py-2 text-sm text-white/60 outline-none">
+                <option value="EXPENSE" className="bg-[#141417]">Expense</option>
+                <option value="INCOME" className="bg-[#141417]">Income</option>
+              </select>
+              <input type="color" value={newColor} onChange={e => setNewColor(e.target.value)}
+                className="w-10 h-10 rounded-lg bg-transparent cursor-pointer border-0" />
+              <button onClick={handleAdd} disabled={addCategory.isPending}
+                className="rounded-lg bg-emerald-500/10 ring-1 ring-emerald-500/20 text-emerald-400 px-4 py-2 text-sm font-medium hover:bg-emerald-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
+                {addCategory.isPending ? 'Adding...' : 'Add'}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {isLoading ? (
+          <div className="space-y-2">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-12 bg-white/[0.04] rounded-xl animate-pulse" />
+            ))}
+          </div>
+        ) : categories && categories.length === 0 ? (
+          <div className="rounded-xl bg-white/[0.02] ring-1 ring-white/[0.04] p-8 text-center space-y-3">
+            <PackageOpen size={32} className="mx-auto text-white/20" />
+            <p className="text-sm text-white/40">No categories yet. Add your first one.</p>
+          </div>
+        ) : (
+          <div className="space-y-1.5">
+            {categories?.map(cat => (
+              <CategoryRow key={cat.id} cat={cat} />
+            ))}
+          </div>
+        )}
+          </>
+        )}
+      </div>
+
+      {/* AI Provider */}
+      <div className="rounded-2xl bg-white/[0.03] ring-1 ring-white/[0.05] p-5 space-y-4">
         <div className="flex items-center gap-2.5">
           <Cpu size={18} className="text-white/40" />
           <h2 className="text-sm font-medium text-white/60">AI Provider</h2>
         </div>
-        <p className="text-sm text-white/50 mt-3 pl-8">DeepSeek V3 (default)</p>
-        <p className="text-xs text-white/30 mt-1 pl-8">Supports DeepSeek, OpenAI, and Anthropic. Set keys in .env</p>
+
+        <div>
+          <label className="text-xs text-white/40 mb-1 block pl-8">Model</label>
+          <input
+            value={aiModel}
+            onChange={e => setAiModel(e.target.value)}
+            placeholder={aiConfig?.defaults.model ?? 'deepseek-chat'}
+            className="w-full bg-white/[0.04] ring-1 ring-white/[0.06] rounded-xl px-3 py-2 text-sm text-white/80 placeholder:text-white/20 outline-none focus:ring-white/[0.12] transition-all"
+          />
+        </div>
+
+        <p className="text-xs text-white/30 pl-8">Base URL and API key are configured via .env</p>
+
+        <div className="pl-8">
+          <button
+            onClick={handleAiSave}
+            disabled={aiSaving}
+            className="rounded-xl bg-emerald-500/10 ring-1 ring-emerald-500/20 text-emerald-400 px-4 py-2 text-sm font-medium hover:bg-emerald-500/20 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {aiSaving ? 'Saving...' : 'Save'}
+          </button>
+        </div>
       </div>
 
       {/* About */}
