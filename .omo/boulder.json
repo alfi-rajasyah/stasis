@@ -1,0 +1,35 @@
+{
+  "schema_version": 2,
+  "active_work_id": "stasis-sprint-1-99009745",
+  "works": {
+    "stasis-sprint-1-99009745": {
+      "work_id": "stasis-sprint-1-99009745",
+      "active_plan": "/Users/alfirajasyah/Documents/Vibe-Code/Stasis/.omo/plans/stasis-sprint-1.md",
+      "plan_name": "stasis-sprint-1",
+      "status": "active",
+      "started_at": "2026-06-08T07:25:50.744Z",
+      "updated_at": "2026-06-08T07:25:50.744Z",
+      "session_ids": [
+        "opencode:ses_159fa959fffeBotKWkUG0PsUB7"
+      ],
+      "session_origins": {
+        "opencode:ses_159fa959fffeBotKWkUG0PsUB7": "direct"
+      },
+      "agent": "atlas",
+      "task_sessions": {}
+    }
+  },
+  "active_plan": "/Users/alfirajasyah/Documents/Vibe-Code/Stasis/.omo/plans/stasis-sprint-1.md",
+  "started_at": "2026-06-08T07:25:50.744Z",
+  "status": "active",
+  "updated_at": "2026-06-08T07:25:50.744Z",
+  "session_ids": [
+    "opencode:ses_159fa959fffeBotKWkUG0PsUB7"
+  ],
+  "session_origins": {
+    "opencode:ses_159fa959fffeBotKWkUG0PsUB7": "direct"
+  },
+  "plan_name": "stasis-sprint-1",
+  "task_sessions": {},
+  "agent": "atlas"
+}

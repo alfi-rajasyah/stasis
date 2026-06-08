@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stasis — Icons &amp; Palettes</title>
+<style>
+  :root {
+    --bg: #F8FAFC;
+    --card: #FFFFFF;
+    --border: #E2E8F0;
+    --text: #1E293B;
+    --text-dim: #64748B;
+    --accent: #3B82F6;
+    --coral: #FB7185;
+    --mint: #2DD4BF;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 40px 20px;
+  }
+  h1 { text-align: center; font-size: 32px; font-weight: 700; margin-bottom: 8px; }
+  .subtitle { text-align: center; color: var(--text-dim); margin-bottom: 20px; font-size: 14px; }
+
+  .palette-row {
+    display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 40px;
+  }
+  .palette-btn {
+    padding: 10px 20px;
+    border-radius: 20px;
+    border: 2px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.15s;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .palette-btn:hover { border-color: #94A3B8; }
+  .palette-btn.active { border-color: var(--accent); color: var(--accent); }
+  .palette-dot { width: 12px; height: 12px; border-radius: 50%; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 20px; max-width: 900px; margin: 0 auto;
+  }
+  .option {
+    background: var(--card);
+    border: 2px solid var(--border);
+    border-radius: 20px;
+    padding: 32px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s, transform 0.15s, box-shadow 0.15s;
+  }
+  .option:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.06); }
+  .option.selected { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59,130,246,0.2); }
+  .option h3 { font-size: 16px; font-weight: 600; margin: 16px 0 4px; }
+  .option p { font-size: 12px; color: var(--text-dim); }
+  .icon-bg-light { background: #F8FAFC; border-radius: 24px; padding: 16px; display: inline-block; }
+  .icon-bg-dark { background: #0F172A; border-radius: 24px; padding: 16px; display: inline-block; }
+  .icon-wrap { display: flex; justify-content: center; gap: 16px; margin-bottom: 8px; }
+  .icon-card { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .icon-card span { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.08em; }
+
+  #pick-msg { text-align:center; margin-top:32px; color:var(--text-dim); font-size:14px; }
+  #pick-msg strong { color: var(--accent); font-weight: 700; }
+
+  .legend {
+    display: flex; gap: 20px; justify-content: center; margin: 12px 0 24px;
+    font-size: 12px; color: var(--text-dim);
+  }
+  .legend span { display: flex; align-items: center; gap: 6px; }
+  .legend .dot { width: 10px; height: 10px; border-radius: 50%; }
+</style>
+</head>
+<body>
+
+<h1>Stasis — Icon Picker</h1>
+<p class="subtitle">TouchFlow-inspired. Light, clean. Click to pick. Icons shown on light + dark backgrounds.</p>
+
+<div class="legend">
+  <span><span class="dot" id="pri-dot" style="background:var(--accent)"></span> Primary</span>
+  <span><span class="dot" style="background:var(--coral)"></span> Coral</span>
+  <span><span class="dot" style="background:var(--mint)"></span> Mint</span>
+</div>
+
+<div class="palette-row" id="palettes"></div>
+
+<div class="grid" id="icon-grid"></div>
+
+<p id="pick-msg">Click an icon to select. Your pick: <strong id="selected-text">—</strong></p>
+
+<script>
+const PALETTES = [
+  { id:'touchflow', name:'TouchFlow',   primary:'#3B82F6', coral:'#FB7185', mint:'#2DD4BF' },
+  { id:'ocean',     name:'Ocean',       primary:'#2563EB', coral:'#F43F5E', mint:'#14B8A6' },
+  { id:'blush',     name:'Blush',       primary:'#6366F1', coral:'#E11D48', mint:'#10B981' },
+  { id:'citrus',    name:'Citrus',      primary:'#0EA5E9', coral:'#F97316', mint:'#22C55E' },
+  { id:'lavender',  name:'Lavender',    primary:'#8B5CF6', coral:'#EC4899', mint:'#34D399' },
+  { id:'slate',     name:'Slate',       primary:'#475569', coral:'#EF4444', mint:'#2DD4BF' },
+];
+
+let activePalette = PALETTES[0];
+let selectedIcon = null;
+
+// ---- ICONS ----
+// lightBg = shown on light (#F8FAFC), uses real colors
+// darkBg = shown on dark (#0F172A), uses white/light colors
+
+function makeSVG(lightBg, darkBg) {
+  return { light: lightBg, dark: darkBg };
+}
+
+function allIcons(p) {
+  const A = makeSVG(
+    `<svg width="80" height="80" viewBox="0 0 96 96">
+      <line x1="24" y1="48" x2="72" y2="48" stroke="${p.primary}" stroke-width="3" stroke-linecap="round"/>
+      <circle cx="48" cy="48" r="4" fill="${p.primary}"/>
+      <line x1="48" y1="48" x2="48" y2="22" stroke="${p.primary}" stroke-width="3" stroke-linecap="round"/>
+      <line x1="18" y1="66" x2="40" y2="48" stroke="#CBD5E1" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="78" y1="66" x2="56" y2="48" stroke="#CBD5E1" stroke-width="2.5" stroke-linecap="round"/>
+      <rect x="12" y="62" width="14" height="5" rx="2.5" fill="${p.mint}" opacity="0.6"/>
+      <rect x="70" y="62" width="14" height="5" rx="2.5" fill="${p.coral}" opacity="0.6"/>
+    </svg>`,
+    `<svg width="80" height="80" viewBox="0 0 96 96">
+      <line x1="24" y1="48" x2="72" y2="48" stroke="${p.primary}" stroke-width="3" stroke-linecap="round"/>
+      <circle cx="48" cy="48" r="4" fill="${p.primary}"/>
+      <line x1="48" y1="48" x2="48" y2="22" stroke="${p.primary}" stroke-width="3" stroke-linecap="round"/>
+      <line x1="18" y1="66" x2="40" y2="48" stroke="#475569" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="78" y1="66" x2="56" y2="48" stroke="#475569" stroke-width="2.5" stroke-linecap="round"/>
+      <rect x="12" y="62" width="14" height="5" rx="2.5" fill="${p.mint}" opacity="0.5"/>
+      <rect x="70" y="62" width="14" height="5" rx="2.5" fill="${p.coral}" opacity="0.5"/>
+    </svg>`
+  );
+
+  const B = makeSVG(
+    `<svg width="80" height="80" viewBox="0 0 96 96">
+      <rect x="4" y="4" width="88" height="88" rx="22" fill="none" stroke="${p.primary}" stroke-width="3"/>
+      <text x="48" y="68" text-anchor="middle" font-family="Inter,sans-serif" font-size="52" font-weight="700" fill="${p.primary}">S</text>
+    </svg>`,
+    `<svg width="80" height="80" viewBox="0 0 96 96">
+      <rect x="4" y="4" width="88" height="88" rx="22" fill="none" stroke="${p.primary}" stroke-width="3"/>
+      <text x="48" y="68" text-anchor="middle" font-family="Inter,sans-serif" font-size="52" font-weight="700" fill="${p.primary}">S</text>
+    </svg>`
+  );
+
+  const C = makeSVG(
+    `<svg width="80" height="80" viewBox="0 0 96 96">
+      <rect x="4" y="4" width="88" height="88" rx="24" fill="none" stroke="${p.primary}" stroke-width="2.5"/>
+      <rect x="22" y="34" width="52" height="8" rx="4" fill="${p.primary}"/>
+      <rect x="22" y="54" width="52" height="8" rx="4" fill="${p.primary}"/>
+    </svg>`,
+    `<svg width="80" height="80" viewBox="0 0 96 96">
+      <rect x="4" y="4" width="88" height="88" rx="24" fill="none" stroke="${p.primary}" stroke-width="2.5"/>
+      <rect x="22" y="34" width="52" height="8" rx="4" fill="${p.primary}"/>
+      <rect x="22" y="54" width="52" height="8" rx="4" fill="${p.primary}"/>
+    </svg>`
+  );
+
+  const D = makeSVG(
+    `<svg width="80" height="80" viewBox="0 0 96 96">
+      <circle cx="48" cy="48" r="38" fill="none" stroke="${p.mint}" stroke-width="2.5" opacity="0.6"/>
+      <circle cx="48" cy="48" r="28" fill="none" stroke="${p.primary}" stroke-width="2.5" opacity="0.7"/>
+      <circle cx="48" cy="48" r="18" fill="none" stroke="${p.coral}" stroke-width="2.5" opacity="0.7"/>
+      <circle cx="48" cy="48" r="8" fill="${p.primary}"/>
+    </svg>`,
+    `<svg width="80" height="80" viewBox="0 0 96 96">
+      <circle cx="48" cy="48" r="38" fill="none" stroke="${p.mint}" stroke-width="2.5" opacity="0.5"/>
+      <circle cx="48" cy="48" r="28" fill="none" stroke="${p.primary}" stroke-width="2.5" opacity="0.6"/>
+      <circle cx="48" cy="48" r="18" fill="none" stroke="${p.coral}" stroke-width="2.5" opacity="0.6"/>
+      <circle cx="48" cy="48" r="8" fill="${p.primary}"/>
+    </svg>`
+  );
+
+  const E = makeSVG(
+    `<svg width="80" height="80" viewBox="0 0 96 96">
+      <polygon points="48,8 86,30 86,66 48,88 10,66 10,30" fill="none" stroke="${p.primary}" stroke-width="2.5"/>
+      <text x="48" y="65" text-anchor="middle" font-family="Inter,sans-serif" font-size="40" font-weight="700" fill="${p.primary}">S</text>
+    </svg>`,
+    `<svg width="80" height="80" viewBox="0 0 96 96">
+      <polygon points="48,8 86,30 86,66 48,88 10,66 10,30" fill="none" stroke="${p.primary}" stroke-width="2.5"/>
+      <text x="48" y="65" text-anchor="middle" font-family="Inter,sans-serif" font-size="40" font-weight="700" fill="${p.primary}">S</text>
+    </svg>`
+  );
+
+  const F = makeSVG(
+    `<svg width="80" height="80" viewBox="0 0 96 96">
+      <circle cx="48" cy="48" r="34" fill="none" stroke="${p.primary}" stroke-width="4" stroke-linecap="round" stroke-dasharray="170 250" stroke-dashoffset="60"/>
+      <circle cx="48" cy="48" r="8" fill="${p.coral}"/>
+    </svg>`,
+    `<svg width="80" height="80" viewBox="0 0 96 96">
+      <circle cx="48" cy="48" r="34" fill="none" stroke="${p.primary}" stroke-width="4" stroke-linecap="round" stroke-dasharray="170 250" stroke-dashoffset="60"/>
+      <circle cx="48" cy="48" r="8" fill="${p.coral}"/>
+    </svg>`
+  );
+
+  const G = makeSVG(
+    `<svg width="80" height="80" viewBox="0 0 96 96">
+      <rect x="4" y="4" width="88" height="88" rx="22" fill="none" stroke="${p.primary}" stroke-width="2.5"/>
+      <rect x="22" y="26" width="52" height="6" rx="3" fill="${p.mint}"/>
+      <rect x="22" y="40" width="40" height="6" rx="3" fill="${p.primary}"/>
+      <rect x="22" y="54" width="28" height="6" rx="3" fill="${p.coral}"/>
+      <rect x="22" y="68" width="18" height="6" rx="3" fill="#E2E8F0"/>
+    </svg>`,
+    `<svg width="80" height="80" viewBox="0 0 96 96">
+      <rect x="4" y="4" width="88" height="88" rx="22" fill="none" stroke="${p.primary}" stroke-width="2.5"/>
+      <rect x="22" y="26" width="52" height="6" rx="3" fill="${p.mint}" opacity="0.8"/>
+      <rect x="22" y="40" width="40" height="6" rx="3" fill="${p.primary}"/>
+      <rect x="22" y="54" width="28" height="6" rx="3" fill="${p.coral}" opacity="0.8"/>
+      <rect x="22" y="68" width="18" height="6" rx="3" fill="#334155"/>
+    </svg>`
+  );
+
+  return [A, B, C, D, E, F, G];
+}
+
+const ICONS = [
+  { id:'A', name:'Balance Scale',     desc:'Classic equilibrium. Balanced, trustworthy.' },
+  { id:'B', name:'S Monogram',        desc:'Clean, bold. Rounded square + letter.' },
+  { id:'C', name:'Equal Sign',        desc:'Ultra-minimal. Balance, steady state.' },
+  { id:'D', name:'Layered Rings',     desc:'Concentric calm. Tri-color accent dots.' },
+  { id:'E', name:'Hexagon S',         desc:'Tech-forward. Structured, geometric.' },
+  { id:'F', name:'Zen Enso',          desc:'Imperfect circle. Mindful equilibrium.' },
+  { id:'G', name:'Budget Bars',       desc:'Finance-forward. Mirrors dashboard UI.' },
+];
+
+const grid = document.getElementById('icon-grid');
+const palRow = document.getElementById('palettes');
+
+function renderPalettes() {
+  palRow.innerHTML = PALETTES.map(p => `
+    <button class="palette-btn${p.id===activePalette.id?' active':''}" onclick="switchPalette('${p.id}')">
+      <span class="palette-dot" style="background:${p.primary}"></span>
+      <span class="palette-dot" style="background:${p.coral}"></span>
+      <span class="palette-dot" style="background:${p.mint}"></span>
+      ${p.name}
+    </button>
+  `).join('');
+
+  document.documentElement.style.setProperty('--accent', activePalette.primary);
+  document.documentElement.style.setProperty('--coral', activePalette.coral);
+  document.documentElement.style.setProperty('--mint', activePalette.mint);
+  document.getElementById('pri-dot').style.background = activePalette.primary;
+}
+
+function renderIcons() {
+  const svgs = allIcons(activePalette);
+  grid.innerHTML = ICONS.map((icon, i) => {
+    const svg = svgs[i];
+    const sel = selectedIcon === icon.id ? ' selected' : '';
+    return `<div class="option${sel}" onclick="select('${icon.id}')">
+      <div class="icon-wrap">
+        <div class="icon-card"><div class="icon-bg-light">${svg.light}</div><span>Light</span></div>
+        <div class="icon-card"><div class="icon-bg-dark">${svg.dark}</div><span>Dark</span></div>
+      </div>
+      <h3>${icon.name}</h3>
+      <p>${icon.desc}</p>
+    </div>`;
+  }).join('');
+}
+
+function switchPalette(id) {
+  activePalette = PALETTES.find(p=>p.id===id);
+  renderPalettes();
+  renderIcons();
+}
+
+function select(id) {
+  selectedIcon = id;
+  document.getElementById('selected-text').textContent = id;
+  renderIcons();
+}
+
+renderPalettes();
+renderIcons();
+</script>
+</body>
+</html>
