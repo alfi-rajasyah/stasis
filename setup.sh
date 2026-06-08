@@ -79,10 +79,15 @@ npx prisma db seed 2>/dev/null || echo "  Seed already applied, skipping"
 echo ""
 echo "[6/6] Building..."
 npm run build
+echo "  Build complete ✓"
+echo "  pm2 will keep the app alive after setup ✓"
 
 echo ""
 echo "========================================"
 echo "  Setup complete!"
-echo "  Starting Stasis..."
+echo "  Installing pm2 process manager..."
 echo "========================================"
-npm start
+npm install -g pm2
+pm2 start npm --name stasis -- start
+pm2 save
+pm2 startup
