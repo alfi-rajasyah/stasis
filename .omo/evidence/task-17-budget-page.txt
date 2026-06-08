@@ -1,0 +1,39 @@
+# QA Evidence: Budget Page Rendering (Task 17)
+## Scenario: Budget page renders with seed data
+
+### Preconditions
+- npm run dev running
+- Seed data loaded (duplicate categories due to multiple seed runs)
+- Browser: gstack/browse headless Chromium
+
+### Steps
+1. Navigated to http://localhost:3000/budget
+2. Waited for network idle + client hydration
+3. Verified page content via DOM inspection
+
+### Results
+Page successfully renders with all expected elements:
+
+#### Income Summary Card
+- Title: "💰 Income"
+- Amount: "Rp 35.000.000" (formatted via formatIDR)
+- Subtitle: "Total income this month"
+
+#### Remaining Banner
+- Text: "✅ Rp 25.000.000 remaining"
+- Subtitle: "After all allocations this month"
+- Status: success/green (income 35M > allocated 10M → no warning needed)
+
+#### Category Allocations
+All 16 categories rendered (8 unique EXPENSE categories × 2 due to duplicate seed):
+- Housing: Rp 5.000.000 (14% of income) ← allocated
+- All others: Rp 0 (0% of income) ← unallocated
+- Each row has: color dot, category name, formatted amount, progress bar, percentage
+
+### Verification Checks
+- incomeData.reduce sum: computed as 35,000,000 ✓
+- totalAllocated: 10,000,000 (2 Housing × 5M) ✓
+- Warning NOT shown (totalAllocated < totalIncome) ✓
+- "✅ remaining" banner IS shown (remaining >= 0) ✓
+- Progress bar percentages: Housing 14%, others 0% ✓
+- formatIDR uses "Rp" prefix with period thousand separators ✓
