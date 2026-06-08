@@ -1,0 +1,11 @@
+node_modules
+.next
+data
+.env
+.git
+.gitignore
+*.md
+.omo
+.gstack
+test-results
+e2e

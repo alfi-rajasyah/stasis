@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { TabBar } from "@/components/tab-bar";
+import { OfflineBanner } from "@/components/offline-banner";
 import { TRPCProvider } from "@/trpc/react";
 import { Toaster } from "sonner";
 
@@ -30,6 +31,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} font-sans antialiased relative`}>
+        <OfflineBanner />
         <ThemeProvider>
           <TRPCProvider>
             <div className="relative z-10 min-h-screen pb-24">{children}</div>
@@ -37,6 +39,12 @@ export default function RootLayout({
           </TRPCProvider>
         </ThemeProvider>
         <Toaster position="top-center" richColors />
+        <link rel="apple-touch-icon" href="/icon-192.png" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js')}`,
+          }}
+        />
       </body>
     </html>
   );
