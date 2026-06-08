@@ -1,4 +1,0 @@
-Running seed command `npx tsx prisma/seed.ts` ...
-Seeded: 10 categories, 1 income, 1 allocation for 2026-06
-
-🌱  The seed command has been executed.

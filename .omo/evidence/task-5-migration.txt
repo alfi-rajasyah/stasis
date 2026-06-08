@@ -1,5 +1,0 @@
-Datasource "db": SQLite database "stasis.db" at "file:./data/stasis.db"
-
-1 migration found in prisma/migrations
-
-Database schema is up to date!
