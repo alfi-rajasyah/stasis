@@ -2,11 +2,10 @@
 
 import { trpc } from '@/trpc/client';
 import { formatIDR } from '@/utils/format';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { useState } from 'react';
-import { Wallet, TrendingUp, AlertTriangle, CircleCheck, Pencil } from 'lucide-react';
+import { AlertTriangle, CircleCheck, Pencil } from 'lucide-react';
 
 export default function BudgetPage() {
   const { data: budget, isLoading: budgetLoading } = trpc.budget.getAll.useQuery();
@@ -36,109 +35,108 @@ export default function BudgetPage() {
 
   if (budgetLoading) {
     return (
-      <div className="container mx-auto px-6 py-8 pb-20 space-y-4 max-w-2xl">
+      <div className="mx-auto max-w-lg px-5 py-8 pb-28 space-y-5">
         {[1, 2, 3, 4].map((i) => (
-          <Card key={i} className="glass animate-pulse">
-            <CardHeader><div className="h-5 bg-muted rounded w-1/3" /></CardHeader>
-            <CardContent><div className="h-8 bg-muted rounded w-1/2" /></CardContent>
-          </Card>
+          <div key={i} className="rounded-2xl bg-white/[0.03] ring-1 ring-white/[0.05] p-5 space-y-3 animate-pulse">
+            <div className="h-4 bg-white/10 rounded w-1/4" />
+            <div className="h-8 bg-white/10 rounded w-1/3" />
+          </div>
         ))}
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-6 py-8 pb-20 space-y-6 max-w-2xl">
+    <div className="mx-auto max-w-lg px-5 py-8 pb-28 space-y-5">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Budget</h1>
-        <span className="text-sm text-muted-foreground font-medium">{budget?.month}</span>
+      <div className="pt-2 pb-4">
+        <p className="text-xs font-medium text-white/40 uppercase tracking-widest">{budget?.month}</p>
+        <h1 className="text-2xl font-semibold tracking-tight mt-1">Budget</h1>
       </div>
 
       {/* Income Summary */}
-      <Card className="glass border-l-[3px] border-l-emerald-500 transition-shadow duration-200 hover:shadow-md cursor-pointer">
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Income</CardTitle>
-          <Wallet size={18} className="text-emerald-500" />
-        </CardHeader>
-        <CardContent>
-          <p className="text-2xl font-bold tracking-tight">{formatIDR(totalIncome)}</p>
-          <p className="text-xs text-muted-foreground mt-1">Total income this month</p>
-        </CardContent>
-      </Card>
+      <div className="rounded-2xl bg-emerald-500/[0.04] ring-1 ring-emerald-500/[0.08] p-5 space-y-2">
+        <p className="text-xs font-medium text-white/40 uppercase tracking-wider">Income</p>
+        <p className="text-3xl font-light tracking-tighter">{formatIDR(totalIncome)}</p>
+        <p className="text-xs text-white/30">Total income this month</p>
+      </div>
 
       {/* Warning / Success Banner */}
       {totalAllocated > totalIncome && totalIncome > 0 && (
-        <div className="glass border border-destructive/20 rounded-xl p-4 flex items-start gap-3">
-          <AlertTriangle size={18} className="text-destructive flex-shrink-0 mt-0.5" />
+        <div className="rounded-2xl bg-red-500/[0.04] ring-1 ring-red-500/[0.08] p-5 flex items-start gap-3">
+          <AlertTriangle size={18} className="text-red-400 flex-shrink-0 mt-0.5" />
           <div>
-            <p className="font-semibold text-destructive">Budget Exceeded</p>
-            <p className="text-sm text-muted-foreground">
-              Allocated {formatIDR(totalAllocated)} of {formatIDR(totalIncome)}. Reduce by {formatIDR(totalAllocated - totalIncome)}.
+            <p className="font-semibold text-red-400 text-sm">Budget Exceeded</p>
+            <p className="text-sm text-white/40 mt-1">
+              Allocated {formatIDR(totalAllocated)} of {formatIDR(totalIncome)}. Reduce by{' '}
+              {formatIDR(totalAllocated - totalIncome)}.
             </p>
           </div>
         </div>
       )}
       {remaining >= 0 && totalIncome > 0 && (
-        <div className="glass border border-emerald-500/20 rounded-xl p-4 flex items-start gap-3">
-          <CircleCheck size={18} className="text-emerald-500 flex-shrink-0 mt-0.5" />
+        <div className="rounded-2xl bg-emerald-500/[0.04] ring-1 ring-emerald-500/[0.08] p-5 flex items-start gap-3">
+          <CircleCheck size={18} className="text-emerald-400 flex-shrink-0 mt-0.5" />
           <div>
-            <p className="font-semibold text-emerald-600 dark:text-emerald-400">{formatIDR(remaining)} remaining</p>
-            <p className="text-sm text-muted-foreground">After all allocations this month</p>
+            <p className="font-semibold text-emerald-400 text-sm">{formatIDR(remaining)} remaining</p>
+            <p className="text-sm text-white/40 mt-1">After all allocations this month</p>
           </div>
         </div>
       )}
 
-      {/* Category Allocations */}
-      <Card className="glass transition-shadow duration-200 hover:shadow-md cursor-pointer">
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Allocations</CardTitle>
-          <TrendingUp size={18} className="text-blue-600" />
-        </CardHeader>
-        <CardContent className="space-y-5">
-          {budget?.categories.map((cat) => {
-            const pct = totalIncome > 0 ? Math.min(100, Math.round((cat.allocated / totalIncome) * 100)) : 0;
-            return (
-              <div key={cat.id} className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: cat.color }} />
-                    <span className="font-medium text-sm">{cat.name}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {editingId === cat.id ? (
-                      <Input
-                        type="number"
-                        value={editValue}
-                        onChange={(e) => setEditValue(e.target.value)}
-                        onBlur={() => handleSave(cat.id)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') handleSave(cat.id);
-                          if (e.key === 'Escape') setEditingId(null);
-                        }}
-                        className="w-28 h-8 text-sm text-right"
-                        autoFocus
-                        min={0}
-                        disabled={setAllocation.isPending}
-                      />
-                    ) : (
-                      <button
-                        onClick={() => { setEditingId(cat.id); setEditValue(String(cat.allocated)); }}
-                        className="flex items-center gap-1 text-sm font-semibold hover:text-primary transition-colors duration-200 cursor-pointer group"
-                      >
-                        {formatIDR(cat.allocated)}
-                        <Pencil size={12} className="text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                      </button>
-                    )}
-                  </div>
+      {/* Allocations */}
+      <div className="rounded-2xl bg-white/[0.03] ring-1 ring-white/[0.05] p-5 space-y-6">
+        <p className="text-xs font-medium text-white/40 uppercase tracking-wider">Allocations</p>
+        {budget?.categories.map((cat) => {
+          const pct = totalIncome > 0 ? Math.min(100, Math.round((cat.allocated / totalIncome) * 100)) : 0;
+          return (
+            <div key={cat.id} className="space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: cat.color }} />
+                  <span className="text-sm font-medium text-white/80">{cat.name}</span>
                 </div>
-                <Progress value={pct} className="h-1.5 [&>div]:bg-blue-600" />
-                <p className="text-[11px] text-muted-foreground text-right">{pct}% of income</p>
+                <div className="flex items-center gap-2">
+                  {editingId === cat.id ? (
+                    <Input
+                      type="number"
+                      value={editValue}
+                      onChange={(e) => setEditValue(e.target.value)}
+                      onBlur={() => handleSave(cat.id)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleSave(cat.id);
+                        if (e.key === 'Escape') setEditingId(null);
+                      }}
+                      className="w-28 h-8 text-sm text-right bg-white/[0.04] border-white/[0.08]"
+                      autoFocus
+                      min={0}
+                      disabled={setAllocation.isPending}
+                    />
+                  ) : (
+                    <button
+                      onClick={() => {
+                        setEditingId(cat.id);
+                        setEditValue(String(cat.allocated));
+                      }}
+                      className="flex items-center gap-1 text-sm font-medium text-white/70 hover:text-emerald-400 transition-colors duration-200 cursor-pointer group"
+                    >
+                      {formatIDR(cat.allocated)}
+                      <Pencil size={12} className="text-white/20 group-hover:text-emerald-400/60 transition-colors" />
+                    </button>
+                  )}
+                </div>
               </div>
-            );
-          })}
-        </CardContent>
-      </Card>
+              <div className="h-1 rounded-full bg-white/[0.06]">
+                <div
+                  className="h-full rounded-full bg-emerald-500 transition-all duration-500"
+                  style={{ width: `${pct}%` }}
+                />
+              </div>
+              <p className="text-[11px] text-white/30 text-right">{pct}% of income</p>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

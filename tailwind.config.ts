@@ -9,6 +9,10 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ["var(--font-inter)", "system-ui", "sans-serif"],
+        mono: ["ui-monospace", "SFMono-Regular", "SF Mono", "Menlo", "Consolas", "monospace"],
+      },
       colors: {
         success: {
           DEFAULT: "var(--success)",
@@ -46,11 +50,6 @@ const config: Config = {
         border: "var(--border)",
         input: "var(--input)",
         ring: "var(--ring)",
-      },
-      borderRadius: {
-        card: "var(--radius-card)",
-        button: "var(--radius-button)",
-        icon: "var(--radius-icon)",
       },
     },
   },
