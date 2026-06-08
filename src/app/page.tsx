@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { trpc } from '@/trpc/client';
 import { formatIDR } from '@/utils/format';
 import { Card, CardContent } from '@/components/ui/card';
@@ -28,6 +29,27 @@ export default function DashboardPage() {
   const committed = data?.committed ?? 0;
   const free = data?.free ?? 0;
   const committedPercent = data?.committedPercent;
+  const debts = data?.debts ?? [];
+
+  const [insight, setInsight] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!data) return;
+    const tips: string[] = [];
+    if (committedPercent && committedPercent > 50) {
+      tips.push(`${committedPercent}% of your income is committed. Consider reviewing subscriptions.`);
+    }
+    if (free > 0) {
+      tips.push(`You have ${formatIDR(free)} free this month.`);
+    }
+    if (debts.length > 0) {
+      const d = debts[0];
+      if (d.monthsRemaining) {
+        tips.push(`"${d.name}" will be paid off in ~${d.monthsRemaining} months.`);
+      }
+    }
+    setInsight(tips.length > 0 ? tips[Math.floor(Math.random() * tips.length)] : null);
+  }, [data, committedPercent, free, debts]);
 
   return (
     <div className="relative mx-auto max-w-lg px-5 py-8 pb-28 space-y-5">
@@ -85,6 +107,16 @@ export default function DashboardPage() {
         <p className="text-xs font-medium text-white/40 uppercase tracking-wider mb-2">Debts</p>
         <p className="text-sm text-white/30">No active debts. Track debts in Sprint 2.</p>
       </div>
+
+      {/* AI Insights */}
+      {insight && (
+        <div className="rounded-2xl bg-white/[0.02] ring-1 ring-white/[0.04] p-5">
+          <div className="flex items-start gap-3">
+            <Sparkles size={18} className="text-emerald-400 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-white/60 leading-relaxed">{insight}</p>
+          </div>
+        </div>
+      )}
 
       {/* Floating AI */}
       <Link
