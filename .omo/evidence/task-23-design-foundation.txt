@@ -1,0 +1,31 @@
+=== TASK: Design Foundation Update ===
+Date: Mon Jun  8 15:51:45 WIB 2026
+
+--- npx tsc --noEmit ---
+PASS (no errors)
+
+--- globals.css tokens ---
+26:    --ring: #2563EB;
+27:    --radius: 0.75rem;
+28:    --radius-card: 1rem;
+29:    --radius-button: 0.625rem;
+30:    --radius-icon: 1.5rem;
+31:    --chart-1: #2563EB;
+38:    --sidebar-primary: #2563EB;
+43:    --sidebar-ring: #2563EB;
+53:    --primary: #2563EB;
+66:    --ring: #2563EB;
+67:    --chart-1: #2563EB;
+74:    --sidebar-primary: #2563EB;
+79:    --sidebar-ring: #2563EB;
+89:    font-family: var(--font-body);
+93:    font-family: var(--font-heading);
+97:  .glass {
+101:  .dark .glass {
+
+--- layout.tsx fonts ---
+2:import { Poppins, Open_Sans } from "next/font/google";
+7:import { Toaster } from "sonner";
+9:const poppins = Poppins({
+15:const openSans = Open_Sans({
+49:        <Toaster position="top-center" richColors />
