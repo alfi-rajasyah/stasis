@@ -58,4 +58,11 @@ export const subscriptionsRouter = router({
         data: { status: 'cancelled' },
       });
     }),
+
+  delete: publicProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      await ctx.prisma.subscriptionPayment.deleteMany({ where: { subscriptionId: input.id } });
+      return ctx.prisma.subscription.delete({ where: { id: input.id } });
+    }),
 });

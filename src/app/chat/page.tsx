@@ -113,7 +113,7 @@ export default function ChatPage() {
   // --- No conversation selected — show conversation list ---
   if (!conversationId) {
     return (
-      <div className="mx-auto max-w-lg px-5 py-8 pb-28">
+      <div className="mx-auto max-w-md px-5 py-8 pb-28 animate-fade-in">
         <div className="pt-2 pb-4">
           <h1 className="text-2xl font-semibold tracking-tight">AI Chat</h1>
           <p className="text-xs font-medium text-white/40 uppercase tracking-widest mt-1">
@@ -164,7 +164,7 @@ export default function ChatPage() {
 
   // --- Active conversation - chat view ---
   return (
-    <div className="mx-auto max-w-lg h-dvh flex flex-col pb-28">
+    <div className="mx-auto max-w-md h-dvh flex flex-col pb-28 animate-fade-in">
       {/* Header */}
       <div className="px-5 py-3 flex items-center justify-between border-b border-white/[0.04] shrink-0">
         <button

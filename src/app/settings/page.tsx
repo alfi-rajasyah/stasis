@@ -2,11 +2,13 @@
 
 import { trpc } from '@/trpc/client';
 import { useState } from 'react';
-import { Plus, Tag, Globe, Cpu, Info } from 'lucide-react';
+import { Plus, Tag, Globe, Cpu, Info, Trash2, Download } from 'lucide-react';
+import { Swipeable } from '@/components/swipeable';
 
 export default function SettingsPage() {
   const { data: categories } = trpc.categories.list.useQuery();
   const addCategory = trpc.categories.add.useMutation();
+  const deleteCat = trpc.categories.delete.useMutation();
   const utils = trpc.useUtils();
   const [newName, setNewName] = useState('');
   const [newType, setNewType] = useState<'INCOME' | 'EXPENSE'>('EXPENSE');
@@ -22,7 +24,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="mx-auto max-w-lg px-5 py-8 pb-28 space-y-5">
+    <div className="mx-auto max-w-md px-5 py-8 pb-28 space-y-5 animate-fade-in">
       {/* Header */}
       <div className="pt-2 pb-4">
         <p className="text-xs font-medium text-white/40 uppercase tracking-widest">Settings</p>
@@ -64,11 +66,35 @@ export default function SettingsPage() {
 
         <div className="space-y-1.5">
           {categories?.map(cat => (
-            <div key={cat.id} className="flex items-center gap-3 py-2">
-              <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: cat.color }} />
-              <span className="text-sm text-white/70 flex-1">{cat.name}</span>
-              <span className="text-xs text-white/30 uppercase">{cat.type}</span>
-            </div>
+            <Swipeable key={cat.id} onDelete={async () => {
+              try {
+                await deleteCat.mutateAsync({ id: cat.id });
+                utils.categories.list.invalidate();
+              } catch (e: any) {
+                alert(e.message);
+              }
+            }}>
+              <div className="flex items-center gap-3 py-2 px-1 bg-[#141417] rounded-2xl">
+                <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: cat.color }} />
+                <span className="text-sm text-white/70 flex-1">{cat.name}</span>
+                <span className="text-xs text-white/30 uppercase">{cat.type}</span>
+                <button
+                  onClick={async (e) => {
+                    e.stopPropagation();
+                    if (!confirm(`Delete "${cat.name}"?`)) return;
+                    try {
+                      await deleteCat.mutateAsync({ id: cat.id });
+                      utils.categories.list.invalidate();
+                    } catch (err: any) {
+                      alert(err.message);
+                    }
+                  }}
+                  className="p-1 rounded-lg text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            </Swipeable>
           ))}
         </div>
       </div>

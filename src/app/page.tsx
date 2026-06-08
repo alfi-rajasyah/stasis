@@ -3,35 +3,19 @@
 import { useState, useEffect } from 'react';
 import { trpc } from '@/trpc/client';
 import { formatIDR } from '@/utils/format';
-import { Card, CardContent } from '@/components/ui/card';
 import Link from 'next/link';
 import { Sparkles } from 'lucide-react';
 
 export default function DashboardPage() {
   const { data, isLoading } = trpc.dashboard.getSummary.useQuery();
-
-  if (isLoading) {
-    return (
-      <div className="mx-auto max-w-lg px-5 py-8 pb-28 space-y-5">
-        {[1, 2, 3].map((i) => (
-          <Card key={i} className="animate-pulse [&>div]:space-y-3">
-            <CardContent>
-              <div className="h-4 bg-white/10 rounded w-1/3" />
-              <div className="h-8 bg-white/10 rounded w-1/2 mt-3" />
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    );
-  }
+  const [insight, setInsight] = useState<string | null>(null);
 
   const income = data?.income ?? 0;
   const committed = data?.committed ?? 0;
   const free = data?.free ?? 0;
   const committedPercent = data?.committedPercent;
+  const upcomingDues = data?.upcomingDues ?? [];
   const debts = data?.debts ?? [];
-
-  const [insight, setInsight] = useState<string | null>(null);
 
   useEffect(() => {
     if (!data) return;
@@ -51,8 +35,21 @@ export default function DashboardPage() {
     setInsight(tips.length > 0 ? tips[Math.floor(Math.random() * tips.length)] : null);
   }, [data, committedPercent, free, debts]);
 
+  if (isLoading) {
+    return (
+      <div className="mx-auto max-w-md px-5 py-8 pb-28 space-y-5 animate-fade-in">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="rounded-2xl bg-white/[0.03] ring-1 ring-white/[0.05] p-5 animate-pulse space-y-3">
+            <div className="h-4 bg-white/[0.06] rounded w-1/3" />
+            <div className="h-8 bg-white/[0.06] rounded w-1/2" />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   return (
-    <div className="relative mx-auto max-w-lg px-5 py-8 pb-28 space-y-5">
+    <div className="relative mx-auto max-w-md px-5 py-8 pb-28 space-y-5 animate-fade-in">
       {/* Header */}
       <div className="pt-2 pb-4">
         <p className="text-xs font-medium text-white/40 uppercase tracking-widest">{data?.month}</p>
@@ -98,14 +95,47 @@ export default function DashboardPage() {
 
       {/* Upcoming */}
       <div className="rounded-2xl bg-white/[0.02] ring-1 ring-white/[0.04] p-5">
-        <p className="text-xs font-medium text-white/40 uppercase tracking-wider mb-2">Upcoming</p>
-        <p className="text-sm text-white/30">No upcoming dues. Track subscriptions in Sprint 2.</p>
+        <p className="text-xs font-medium text-white/40 uppercase tracking-wider mb-3">Upcoming</p>
+        {upcomingDues.length > 0 ? (
+          <div className="space-y-2">
+            {upcomingDues.slice(0, 5).map((due: any, i: number) => (
+              <div key={i} className="flex items-center justify-between text-sm">
+                <span className="text-white/70 truncate mr-2">{due.name}</span>
+                <span className="text-white/50 flex-shrink-0">
+                  {due.type === 'subscription' ? formatIDR(due.amount) : formatIDR(due.amount)} · {new Date(due.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                </span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-white/30">No upcoming dues this week</p>
+        )}
       </div>
 
       {/* Debts */}
       <div className="rounded-2xl bg-white/[0.02] ring-1 ring-white/[0.04] p-5">
-        <p className="text-xs font-medium text-white/40 uppercase tracking-wider mb-2">Debts</p>
-        <p className="text-sm text-white/30">No active debts. Track debts in Sprint 2.</p>
+        <p className="text-xs font-medium text-white/40 uppercase tracking-wider mb-3">Debts</p>
+        {debts.length > 0 ? (
+          <div className="space-y-3">
+            {debts.map((debt: any) => (
+              <div key={debt.id} className="space-y-1.5">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-white/70">{debt.name}</span>
+                  <span className="text-white/50">{formatIDR(debt.remainingAmount)}</span>
+                </div>
+                <div className="h-1 rounded-full bg-white/[0.06]">
+                  <div className="h-full rounded-full bg-emerald-500/60 transition-all" style={{ width: `${debt.progressPercent}%` }} />
+                </div>
+                <div className="flex items-center justify-between text-xs text-white/30">
+                  <span>{debt.progressPercent}% paid</span>
+                  {debt.monthsRemaining && <span>~{debt.monthsRemaining} months left</span>}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-white/30">No active debts</p>
+        )}
       </div>
 
       {/* AI Insights */}

@@ -12,6 +12,7 @@ import {
   Landmark,
   Zap,
   Receipt,
+  Trash2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -122,6 +123,27 @@ export default function TrackersPage() {
       utils.dashboard.getSummary.invalidate();
       setShowAddDebt(false);
       resetDebtForm();
+    },
+  });
+
+  const deleteSub = trpc.subscriptions.delete.useMutation({
+    onSuccess: () => {
+      utils.subscriptions.list.invalidate();
+      utils.dashboard.getSummary.invalidate();
+    },
+  });
+
+  const deleteBill = trpc.recurringBills.delete.useMutation({
+    onSuccess: () => {
+      utils.recurringBills.list.invalidate();
+      utils.dashboard.getSummary.invalidate();
+    },
+  });
+
+  const deleteDebt = trpc.debts.delete.useMutation({
+    onSuccess: () => {
+      utils.debts.list.invalidate();
+      utils.dashboard.getSummary.invalidate();
     },
   });
 
@@ -238,7 +260,7 @@ export default function TrackersPage() {
 
   if (isLoading) {
     return (
-      <div className="mx-auto max-w-lg px-5 py-8 pb-28 space-y-5">
+      <div className="mx-auto max-w-md px-5 py-8 pb-28 space-y-5">
         <div className="pt-2 pb-4">
           <div className="h-3 w-20 bg-white/10 rounded animate-pulse" />
           <div className="h-7 w-28 bg-white/10 rounded mt-3 animate-pulse" />
@@ -269,7 +291,7 @@ export default function TrackersPage() {
   // ───── Render ────────────────────────────────────────
 
   return (
-    <div className="mx-auto max-w-lg px-5 py-8 pb-28 space-y-5">
+    <div className="mx-auto max-w-md px-5 py-8 pb-28 space-y-5">
       {/* Header */}
       <div className="pt-2 pb-4">
         <p className="text-xs font-medium text-white/40 uppercase tracking-widest">Trackers</p>
@@ -277,7 +299,7 @@ export default function TrackersPage() {
       </div>
 
       {/* Sub-tabs */}
-      <div className="flex gap-1 bg-white/[0.02] rounded-xl p-1">
+      <div className="flex justify-center gap-1 bg-white/[0.02] rounded-xl p-1">
         {TABS.map((tab) => {
           const Icon = tab.icon;
           return (
@@ -298,7 +320,7 @@ export default function TrackersPage() {
 
       {/* ── Subscriptions Tab ── */}
       {activeTab === 'subscriptions' && (
-        <div className="space-y-4">
+        <div className="space-y-4 animate-fade-in">
           {/* Monthly Burn */}
           <div className="rounded-2xl bg-emerald-500/[0.04] ring-1 ring-emerald-500/[0.08] p-5 space-y-2">
             <p className="text-xs font-medium text-white/40 uppercase tracking-wider">Monthly Burn</p>
@@ -332,14 +354,22 @@ export default function TrackersPage() {
                 {/* Row 1: name + status */}
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-medium text-white/80">{sub.name}</p>
-                  <span
-                    className={cn(
-                      'text-[11px] font-medium px-2.5 py-0.5 rounded-full',
-                      subStatusColor(sub.status)
-                    )}
-                  >
-                    {sub.status}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={cn(
+                        'text-[11px] font-medium px-2.5 py-0.5 rounded-full',
+                        subStatusColor(sub.status)
+                      )}
+                    >
+                      {sub.status}
+                    </span>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); if (confirm(`Delete ${sub.name}?`)) deleteSub.mutate({ id: sub.id }); }}
+                      className="p-1 rounded-lg text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
                 </div>
 
                 {/* Row 2: amount + cycle */}
@@ -383,7 +413,7 @@ export default function TrackersPage() {
 
       {/* ── Bills Tab ── */}
       {activeTab === 'bills' && (
-        <div className="space-y-4">
+        <div className="space-y-4 animate-fade-in">
           {/* Add Button */}
           <button
             onClick={() => setShowAddBill(true)}
@@ -417,6 +447,12 @@ export default function TrackersPage() {
                       ) : (
                         <XCircle size={16} className="text-white/20" />
                       )}
+                      <button
+                        onClick={(e) => { e.stopPropagation(); if (confirm(`Delete ${bill.name}?`)) deleteBill.mutate({ id: bill.id }); }}
+                        className="p-1 rounded-lg text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                      >
+                        <Trash2 size={14} />
+                      </button>
                     </div>
                   </div>
 
@@ -453,7 +489,7 @@ export default function TrackersPage() {
 
       {/* ── Debts Tab ── */}
       {activeTab === 'debts' && (
-        <div className="space-y-4">
+        <div className="space-y-4 animate-fade-in">
           {/* Add Button */}
           <button
             onClick={() => setShowAddDebt(true)}
@@ -476,9 +512,17 @@ export default function TrackersPage() {
                 className="rounded-2xl bg-white/[0.03] ring-1 ring-white/[0.05] p-5 space-y-4"
               >
                 {/* Name + creditor */}
-                <div>
-                  <p className="text-sm font-medium text-white/80">{debt.name}</p>
-                  <p className="text-xs text-white/40 mt-0.5">{debt.creditor}</p>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-white/80">{debt.name}</p>
+                    <p className="text-xs text-white/40 mt-0.5">{debt.creditor}</p>
+                  </div>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); if (confirm(`Delete ${debt.name}?`)) deleteDebt.mutate({ id: debt.id }); }}
+                    className="p-1 rounded-lg text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-all flex-shrink-0"
+                  >
+                    <Trash2 size={14} />
+                  </button>
                 </div>
 
                 {/* Remaining amount */}

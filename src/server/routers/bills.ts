@@ -77,4 +77,10 @@ export const billsRouter = router({
         data: { billId: input.billId, amount: bill.defaultAmount, month, isPaid: true, paidDate: new Date() },
       });
     }),
+  delete: publicProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      await ctx.prisma.billPayment.deleteMany({ where: { billId: input.id } });
+      return ctx.prisma.recurringBill.delete({ where: { id: input.id } });
+    }),
 });

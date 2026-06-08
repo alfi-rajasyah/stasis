@@ -3,6 +3,9 @@ import withPWAInit from "next-pwa";
 
 const nextConfig = {
   output: 'standalone',
+  experimental: {
+    viewTransition: true,
+  },
 };
 
 const withPWA = withPWAInit({

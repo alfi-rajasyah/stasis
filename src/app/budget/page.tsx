@@ -35,7 +35,7 @@ export default function BudgetPage() {
 
   if (budgetLoading) {
     return (
-      <div className="mx-auto max-w-lg px-5 py-8 pb-28 space-y-5">
+      <div className="mx-auto max-w-md px-5 py-8 pb-28 space-y-5 animate-fade-in">
         {[1, 2, 3, 4].map((i) => (
           <div key={i} className="rounded-2xl bg-white/[0.03] ring-1 ring-white/[0.05] p-5 space-y-3 animate-pulse">
             <div className="h-4 bg-white/10 rounded w-1/4" />
@@ -47,7 +47,7 @@ export default function BudgetPage() {
   }
 
   return (
-    <div className="mx-auto max-w-lg px-5 py-8 pb-28 space-y-5">
+    <div className="mx-auto max-w-md px-5 py-8 pb-28 space-y-5 animate-fade-in">
       {/* Header */}
       <div className="pt-2 pb-4">
         <p className="text-xs font-medium text-white/40 uppercase tracking-widest">{budget?.month}</p>

@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { TabBar } from "@/components/tab-bar";
 import { OfflineBanner } from "@/components/offline-banner";
 import { TRPCProvider } from "@/trpc/react";
+import { PageTransition } from "@/components/page-transition";
 import { Toaster } from "sonner";
 
 const inter = Inter({
@@ -16,6 +17,10 @@ export const metadata: Metadata = {
   title: "Stasis",
   description: "Personal Finance Manager",
   manifest: "/manifest.json",
+  icons: {
+    icon: "/icon-192.png",
+    apple: "/icon-192.png",
+  },
 };
 
 export const viewport: Viewport = {
@@ -34,12 +39,13 @@ export default function RootLayout({
         <OfflineBanner />
         <ThemeProvider>
           <TRPCProvider>
-            <div className="relative z-10 min-h-screen pb-24">{children}</div>
+            <div className="relative z-10 min-h-screen pb-24">
+              <PageTransition>{children}</PageTransition>
+            </div>
             <TabBar />
           </TRPCProvider>
         </ThemeProvider>
         <Toaster position="top-center" richColors />
-        <link rel="apple-touch-icon" href="/icon-192.png" />
         <script
           dangerouslySetInnerHTML={{
             __html: `if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js')}`,

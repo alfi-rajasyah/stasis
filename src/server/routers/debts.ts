@@ -63,4 +63,10 @@ export const debtsRouter = router({
         },
       });
     }),
+  delete: publicProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      await ctx.prisma.debtPayment.deleteMany({ where: { debtId: input.id } });
+      return ctx.prisma.debt.delete({ where: { id: input.id } });
+    }),
 });
