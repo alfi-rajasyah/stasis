@@ -1,13 +1,6 @@
 import { z } from 'zod';
 import { publicProcedure, router } from '../trpc';
-
-function checkModelKeyConfigured(model: string): boolean {
-  if (model.startsWith('deepseek')) return !!process.env.DEEPSEEK_API_KEY;
-  if (model.startsWith('gpt') || model.startsWith('o1') || model.startsWith('o3'))
-    return !!process.env.OPENAI_API_KEY;
-  if (model.startsWith('claude')) return !!process.env.ANTHROPIC_API_KEY;
-  return false;
-}
+import { getAIConfig, AI_ENV_DEFAULTS } from '@/lib/ai-provider';
 
 export const aiRouter = router({
   conversations: publicProcedure.query(async ({ ctx }) => {
@@ -91,6 +84,18 @@ export const aiRouter = router({
       return { success: true };
     }),
 
+  deleteConversation: publicProcedure
+    .input(z.object({ conversationId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      await ctx.prisma.aiMessage.deleteMany({
+        where: { conversationId: input.conversationId },
+      });
+      await ctx.prisma.aiConversation.delete({
+        where: { id: input.conversationId },
+      });
+      return { success: true };
+    }),
+
   getSetting: publicProcedure
     .input(z.object({ key: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -111,9 +116,18 @@ export const aiRouter = router({
       return { success: true };
     }),
 
-  checkModelAccess: publicProcedure
-    .input(z.object({ model: z.string() }))
-    .query(async ({ input }) => {
-      return { available: checkModelKeyConfigured(input.model) };
-    }),
+  /** Returns the effective AI config (settings overrides + env fallbacks) */
+  getConfig: publicProcedure.query(async ({ ctx }) => {
+    const config = await getAIConfig(ctx.prisma);
+    return {
+      saved: {
+        baseURL: config.baseURL === process.env.AI_BASE_URL ? '' : config.baseURL,
+        model: config.model === process.env.AI_MODEL ? '' : config.model,
+        apiKey: config.apiKey === process.env.AI_API_KEY ? '' : config.apiKey,
+        fallbackModel: config.fallbackModel === process.env.AI_FALLBACK_MODEL ? '' : config.fallbackModel,
+      },
+      effective: config,
+      defaults: AI_ENV_DEFAULTS,
+    };
+  }),
 });
