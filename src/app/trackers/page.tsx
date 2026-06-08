@@ -3,6 +3,7 @@
 import { trpc } from '@/trpc/client';
 import { formatIDR } from '@/utils/format';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import {
   Calendar,
   CreditCard,
@@ -75,6 +76,7 @@ export default function TrackersPage() {
     onSuccess: () => {
       utils.subscriptions.list.invalidate();
       utils.dashboard.getSummary.invalidate();
+      toast.success('Subscription marked as paid');
     },
   });
 
@@ -82,6 +84,7 @@ export default function TrackersPage() {
     onSuccess: () => {
       utils.subscriptions.list.invalidate();
       utils.dashboard.getSummary.invalidate();
+      toast.success('Subscription cancelled');
     },
   });
 
@@ -91,13 +94,15 @@ export default function TrackersPage() {
       utils.dashboard.getSummary.invalidate();
       setShowAddSub(false);
       resetSubForm();
+      toast.success('Subscription added');
     },
   });
 
   const billToggle = trpc.recurringBills.togglePaid.useMutation({
-    onSuccess: () => {
+    onSuccess: (data) => {
       utils.recurringBills.list.invalidate();
       utils.dashboard.getSummary.invalidate();
+      toast.success(data.isPaid ? 'Bill marked as paid' : 'Bill marked as unpaid');
     },
   });
 
@@ -107,6 +112,7 @@ export default function TrackersPage() {
       utils.dashboard.getSummary.invalidate();
       setShowAddBill(false);
       resetBillForm();
+      toast.success('Bill added');
     },
   });
 
@@ -114,6 +120,7 @@ export default function TrackersPage() {
     onSuccess: () => {
       utils.debts.list.invalidate();
       utils.dashboard.getSummary.invalidate();
+      toast.success('Debt payment recorded');
     },
   });
 
@@ -123,6 +130,7 @@ export default function TrackersPage() {
       utils.dashboard.getSummary.invalidate();
       setShowAddDebt(false);
       resetDebtForm();
+      toast.success('Debt added');
     },
   });
 
@@ -130,6 +138,7 @@ export default function TrackersPage() {
     onSuccess: () => {
       utils.subscriptions.list.invalidate();
       utils.dashboard.getSummary.invalidate();
+      toast.success('Subscription deleted');
     },
   });
 
@@ -137,6 +146,7 @@ export default function TrackersPage() {
     onSuccess: () => {
       utils.recurringBills.list.invalidate();
       utils.dashboard.getSummary.invalidate();
+      toast.success('Bill deleted');
     },
   });
 
@@ -144,6 +154,7 @@ export default function TrackersPage() {
     onSuccess: () => {
       utils.debts.list.invalidate();
       utils.dashboard.getSummary.invalidate();
+      toast.success('Debt deleted');
     },
   });
 
@@ -401,7 +412,7 @@ export default function TrackersPage() {
                       disabled={subCancel.isPending && subCancel.variables?.subscriptionId === sub.id}
                       className="rounded-xl bg-white/[0.04] ring-1 ring-white/[0.06] text-white/60 text-sm px-4 py-1.5 hover:bg-white/[0.08] transition-all cursor-pointer disabled:opacity-40"
                     >
-                      {subCancel.isPending && subCancel.variables?.subscriptionId === sub.id ? '...' : 'Cancel'}
+                      {subCancel.isPending && subCancel.variables?.subscriptionId === sub.id ? 'Cancelling...' : 'Cancel'}
                     </button>
                   </div>
                 )}
@@ -442,7 +453,9 @@ export default function TrackersPage() {
                   <div className="flex items-center justify-between">
                     <p className="text-sm font-medium text-white/80">{bill.name}</p>
                     <div className="flex items-center gap-2">
-                      {bill.status === 'paid' ? (
+                      {billToggle.isPending && billToggle.variables?.billId === bill.id ? (
+                        <span className="text-xs text-white/40">Toggling...</span>
+                      ) : bill.status === 'paid' ? (
                         <CheckCircle size={16} className="text-emerald-400" />
                       ) : (
                         <XCircle size={16} className="text-white/20" />

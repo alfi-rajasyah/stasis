@@ -4,7 +4,9 @@ import { trpc } from '@/trpc/client';
 import { formatIDR } from '@/utils/format';
 import { Input } from '@/components/ui/input';
 import { useState } from 'react';
-import { AlertTriangle, CircleCheck, Pencil } from 'lucide-react';
+import Link from 'next/link';
+import { AlertTriangle, CircleCheck, Pencil, PieChart } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function BudgetPage() {
   const { data: budget, isLoading: budgetLoading } = trpc.budget.getAll.useQuery();
@@ -19,6 +21,7 @@ export default function BudgetPage() {
       utils.budget.getAll.invalidate();
       utils.dashboard.getSummary.invalidate();
       setEditingId(null);
+      toast.success('Budget updated');
     },
     onError: () => {
       setEditingId(null);
@@ -89,57 +92,70 @@ export default function BudgetPage() {
       {/* Allocations */}
       <div className="rounded-2xl bg-white/[0.03] ring-1 ring-white/[0.05] p-5 space-y-6">
         <p className="text-xs font-medium text-white/40 uppercase tracking-wider">Allocations</p>
-        {budget?.categories
-          .filter((cat, index, self) => self.findIndex(c => c.name === cat.name) === index)
-          .map((cat) => {
-          const pct = totalIncome > 0 ? Math.min(100, Math.round((cat.allocated / totalIncome) * 100)) : 0;
-          return (
-            <div key={cat.id} className="space-y-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: cat.color }} />
-                  <span className="text-sm font-medium text-white/80">{cat.name}</span>
+        {!budget?.categories?.length ? (
+          <div className="rounded-2xl bg-white/[0.02] ring-1 ring-white/[0.04] p-12 text-center space-y-3">
+            <PieChart size={36} className="mx-auto text-white/20" />
+            <p className="text-sm text-white/40">
+              No categories set.{' '}
+              <Link href="/settings" className="text-emerald-400 hover:text-emerald-300 underline">
+                Add categories in Settings
+              </Link>
+              .
+            </p>
+          </div>
+        ) : (
+          budget?.categories
+            .filter((cat, index, self) => self.findIndex(c => c.name === cat.name) === index)
+            .map((cat) => {
+            const pct = totalIncome > 0 ? Math.min(100, Math.round((cat.allocated / totalIncome) * 100)) : 0;
+            return (
+              <div key={cat.id} className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: cat.color }} />
+                    <span className="text-sm font-medium text-white/80">{cat.name}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {editingId === cat.id ? (
+                      <Input
+                        type="number"
+                        value={editValue}
+                        onChange={(e) => setEditValue(e.target.value)}
+                        onBlur={() => handleSave(cat.id)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') handleSave(cat.id);
+                          if (e.key === 'Escape') setEditingId(null);
+                        }}
+                        className="w-28 h-8 text-sm text-right bg-white/[0.04] border-white/[0.08]"
+                        autoFocus
+                        min={0}
+                        disabled={setAllocation.isPending}
+                      />
+                    ) : (
+                      <button
+                        onClick={() => {
+                          setEditingId(cat.id);
+                          setEditValue(String(cat.allocated));
+                        }}
+                        className="flex items-center gap-1 text-sm font-medium text-white/70 hover:text-emerald-400 transition-colors duration-200 cursor-pointer group"
+                      >
+                        {formatIDR(cat.allocated)}
+                        <Pencil size={12} className="text-white/20 group-hover:text-emerald-400/60 transition-colors" />
+                      </button>
+                    )}
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  {editingId === cat.id ? (
-                    <Input
-                      type="number"
-                      value={editValue}
-                      onChange={(e) => setEditValue(e.target.value)}
-                      onBlur={() => handleSave(cat.id)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') handleSave(cat.id);
-                        if (e.key === 'Escape') setEditingId(null);
-                      }}
-                      className="w-28 h-8 text-sm text-right bg-white/[0.04] border-white/[0.08]"
-                      autoFocus
-                      min={0}
-                      disabled={setAllocation.isPending}
-                    />
-                  ) : (
-                    <button
-                      onClick={() => {
-                        setEditingId(cat.id);
-                        setEditValue(String(cat.allocated));
-                      }}
-                      className="flex items-center gap-1 text-sm font-medium text-white/70 hover:text-emerald-400 transition-colors duration-200 cursor-pointer group"
-                    >
-                      {formatIDR(cat.allocated)}
-                      <Pencil size={12} className="text-white/20 group-hover:text-emerald-400/60 transition-colors" />
-                    </button>
-                  )}
+                <div className="h-1 rounded-full bg-white/[0.06]">
+                  <div
+                    className="h-full rounded-full bg-emerald-500 transition-all duration-500"
+                    style={{ width: `${pct}%` }}
+                  />
                 </div>
+                <p className="text-[11px] text-white/30 text-right">{pct}% of income</p>
               </div>
-              <div className="h-1 rounded-full bg-white/[0.06]">
-                <div
-                  className="h-full rounded-full bg-emerald-500 transition-all duration-500"
-                  style={{ width: `${pct}%` }}
-                />
-              </div>
-              <p className="text-[11px] text-white/30 text-right">{pct}% of income</p>
-            </div>
-          );
-        })}
+            );
+          })
+        )}
       </div>
     </div>
   );

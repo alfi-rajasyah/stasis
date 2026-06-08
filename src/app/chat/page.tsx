@@ -58,6 +58,7 @@ export default function ChatPage() {
     setConversationId(conv.id);
     setMessages([]);
     utils.ai.conversations.invalidate();
+    toast.success('New conversation started');
   };
 
   const send = async () => {
@@ -140,9 +141,10 @@ export default function ChatPage() {
           </p>
           <button
             onClick={startNew}
-            className="rounded-xl bg-emerald-500/10 ring-1 ring-emerald-500/20 text-emerald-400 px-6 py-2.5 text-sm font-medium hover:bg-emerald-500/20 transition-all cursor-pointer"
+            disabled={createConv.isPending}
+            className="rounded-xl bg-emerald-500/10 ring-1 ring-emerald-500/20 text-emerald-400 px-6 py-2.5 text-sm font-medium hover:bg-emerald-500/20 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Start Chat
+            {createConv.isPending ? 'Creating...' : 'Start Chat'}
           </button>
         </div>
 
@@ -212,7 +214,7 @@ export default function ChatPage() {
               </option>
             ))}
           </select>
-          <button onClick={startNew} className="text-white/40 hover:text-white/60 transition-all cursor-pointer">
+          <button onClick={startNew} disabled={createConv.isPending} className="text-white/40 hover:text-white/60 transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed">
             <Plus size={20}/>
           </button>
         </div>

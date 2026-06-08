@@ -62,7 +62,7 @@ export function Swipeable({ children, onDelete, deleteLabel = 'Delete', classNam
 
   const handleDelete = () => {
     setDeleting(true);
-    onDelete();
+    Promise.resolve(onDelete()).catch(() => setDeleting(false));
   };
 
   const reset = () => {
