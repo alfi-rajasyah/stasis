@@ -1,13 +1,43 @@
 'use client';
 
+import { useState } from 'react';
 import { trpc } from '@/trpc/client';
 import { formatIDR } from '@/utils/format';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
+import { Input } from '@/components/ui/input';
 
 export default function BudgetPage() {
   const { data: budget, isLoading: budgetLoading } = trpc.budget.getAll.useQuery();
   const { data: incomeData } = trpc.income.list.useQuery();
+  const utils = trpc.useUtils();
+
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState('');
+  const [editError, setEditError] = useState<string | null>(null);
+
+  const setAllocation = trpc.budget.set.useMutation({
+    onSuccess: () => {
+      utils.budget.getAll.invalidate();
+      utils.dashboard.getSummary.invalidate();
+      setEditingId(null);
+      setEditValue('');
+      setEditError(null);
+    },
+    onError: (err) => {
+      setEditError(err.message);
+    },
+  });
+
+  const handleSave = (categoryId: string) => {
+    const amount = parseInt(editValue, 10);
+    if (isNaN(amount) || amount < 0) {
+      setEditError('Amount must be a non-negative number');
+      return;
+    }
+    setEditError(null);
+    setAllocation.mutate({ categoryId, allocatedAmount: amount });
+  };
 
   const totalIncome = incomeData?.reduce((sum, e) => sum + e.amount, 0) ?? 0;
   const totalAllocated = budget?.totalAllocated ?? 0;
@@ -67,11 +97,20 @@ export default function BudgetPage() {
           <CardTitle>📊 Allocations</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Edit error banner */}
+          {editError && (
+            <div className="bg-destructive/10 border border-destructive/30 text-destructive rounded-lg p-3 text-sm">
+              {editError}
+            </div>
+          )}
+
           {budget?.categories.map((cat) => {
             const pct =
               totalIncome > 0
                 ? Math.min(100, Math.round((cat.allocated / totalIncome) * 100))
                 : 0;
+            const isEditing = editingId === cat.id;
+            const isSaving = setAllocation.isPending && isEditing;
             return (
               <div key={cat.id} className="space-y-1.5">
                 <div className="flex items-center justify-between">
@@ -82,9 +121,45 @@ export default function BudgetPage() {
                     />
                     <span className="font-medium text-sm">{cat.name}</span>
                   </div>
-                  <span className="text-sm font-semibold">
-                    {formatIDR(cat.allocated)}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    {isEditing ? (
+                      <Input
+                        type="number"
+                        value={editValue}
+                        onChange={(e) => {
+                          setEditValue(e.target.value);
+                          setEditError(null);
+                        }}
+                        onBlur={() => handleSave(cat.id)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') handleSave(cat.id);
+                          if (e.key === 'Escape') {
+                            setEditingId(null);
+                            setEditValue('');
+                            setEditError(null);
+                          }
+                        }}
+                        className="w-32 h-8 text-sm text-right"
+                        autoFocus
+                        min={0}
+                        disabled={isSaving}
+                      />
+                    ) : (
+                      <button
+                        onClick={() => {
+                          setEditingId(cat.id);
+                          setEditValue(String(cat.allocated));
+                          setEditError(null);
+                        }}
+                        className="text-sm font-semibold hover:text-primary transition-colors cursor-pointer"
+                      >
+                        {formatIDR(cat.allocated)}
+                      </button>
+                    )}
+                    {isSaving && (
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                    )}
+                  </div>
                 </div>
                 <Progress value={pct} />
                 <p className="text-xs text-muted-foreground text-right">

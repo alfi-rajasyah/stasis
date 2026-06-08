@@ -1,0 +1,19 @@
+Task 18 - Inline Edit QA Evidence
+==================================
+Scenario: Inline edit saves and persists
+Date: 2026-06-08
+
+Steps:
+1. Started dev server on port 3000
+2. Called budget.getAll to get current Housing category allocation (was 5000000)
+3. Called budget.set mutation: POST /api/trpc/budget.set
+   - categoryId: cmq4wj1wo0002ahr66krs4a1n (Housing)
+   - allocatedAmount: 7000000
+4. Called budget.getAll again to verify persistence
+
+Result:
+- Mutation returned success: {"id":"cmq4wj1x5000bahr6qv4y61tp","categoryId":"cmq4wj1wo0002ahr66krs4a1n","allocatedAmount":7000000,...}
+- Budget.getAll confirm: Housing allocation changed from 5000000 to 7000000
+- Total allocated updated from 10000000 to 12000000
+
+Evidence: PASS
