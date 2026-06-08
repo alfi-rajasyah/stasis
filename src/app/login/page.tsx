@@ -1,16 +1,13 @@
 'use client';
 
 import { signIn } from "next-auth/react";
-import { Sparkles } from "lucide-react";
 
 export default function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center px-5">
       <div className="w-full max-w-sm space-y-8 text-center">
-        <div className="space-y-3">
-          <div className="mx-auto w-16 h-16 rounded-2xl bg-emerald-500/10 ring-1 ring-emerald-500/20 flex items-center justify-center">
-            <Sparkles size={28} className="text-emerald-400" />
-          </div>
+        <div className="space-y-4">
+          <img src="/icon-192.png" alt="Stasis" className="mx-auto w-20 h-20 rounded-2xl" />
           <h1 className="text-2xl font-semibold tracking-tight">Stasis</h1>
           <p className="text-sm text-white/40">Personal Finance Manager</p>
         </div>
