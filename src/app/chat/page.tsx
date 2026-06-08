@@ -3,7 +3,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { Send, Sparkles, Plus } from 'lucide-react';
 import { trpc } from '@/trpc/client';
-import { AVAILABLE_MODELS, type SupportedModel } from '@/lib/ai-provider';
+import { Swipeable } from '@/components/swipeable';
+
 import { toast } from 'sonner';
 
 interface Message {
@@ -16,7 +17,7 @@ export default function ChatPage() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
-  const [model, setModel] = useState<SupportedModel>('deepseek-chat');
+  const [model, setModel] = useState('deepseek-chat');
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -27,7 +28,8 @@ export default function ChatPage() {
     { enabled: !!conversationId }
   );
   const addMsg = trpc.ai.addMessages.useMutation();
-  const { data: modelSetting } = trpc.ai.getSetting.useQuery({ key: 'defaultModel' });
+  const deleteConv = trpc.ai.deleteConversation.useMutation();
+  const { data: modelSetting } = trpc.ai.getSetting.useQuery({ key: 'ai_model' });
   const setModelSetting = trpc.ai.setSetting.useMutation();
   const utils = trpc.useUtils();
 
@@ -37,6 +39,10 @@ export default function ChatPage() {
       setMessages(activeConv.messages);
     }
   }, [activeConv]);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'auto' });
+  }, [conversationId, activeConv]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -49,7 +55,7 @@ export default function ChatPage() {
   // Load persisted model preference
   useEffect(() => {
     if (modelSetting?.value) {
-      setModel(modelSetting.value as SupportedModel);
+      setModel(modelSetting.value);
     }
   }, [modelSetting]);
 
@@ -155,18 +161,30 @@ export default function ChatPage() {
               Recent
             </p>
             {conversations.map(c => (
-              <button
+              <Swipeable
                 key={c.id}
-                onClick={() => setConversationId(c.id)}
-                className="w-full rounded-2xl bg-white/[0.02] ring-1 ring-white/[0.04] p-4 text-left hover:bg-white/[0.04] transition-all cursor-pointer"
+                onDelete={async () => {
+                  await deleteConv.mutateAsync({ conversationId: c.id });
+                  if (c.id === conversationId) {
+                    setConversationId(null);
+                    setMessages([]);
+                  }
+                  utils.ai.conversations.invalidate();
+                  toast.success('Conversation deleted');
+                }}
               >
-                <p className="text-sm text-white/60">
-                  {c.title || 'New conversation'}
-                </p>
-                <p className="text-xs text-white/20 mt-1">
-                  {new Date(c.createdAt).toLocaleDateString()}
-                </p>
-              </button>
+                <button
+                  onClick={() => setConversationId(c.id)}
+                  className="w-full rounded-2xl bg-white/[0.02] ring-1 ring-white/[0.04] p-4 text-left hover:bg-white/[0.04] transition-all cursor-pointer"
+                >
+                  <p className="text-sm text-white/60">
+                    {c.title || 'New conversation'}
+                  </p>
+                  <p className="text-xs text-white/20 mt-1">
+                    {new Date(c.createdAt).toLocaleDateString()}
+                  </p>
+                </button>
+              </Swipeable>
             ))}
           </div>
         )}
@@ -199,21 +217,15 @@ export default function ChatPage() {
         </button>
         <h2 className="text-sm font-medium text-white/60">AI Assistant</h2>
         <div className="flex items-center gap-2">
-          <select
+          <input
             value={model}
             onChange={e => {
-              const newModel = e.target.value as SupportedModel;
-              setModel(newModel);
-              setModelSetting.mutate({ key: 'defaultModel', value: newModel });
+              setModel(e.target.value);
+              setModelSetting.mutate({ key: 'ai_model', value: e.target.value });
             }}
-            className="bg-white/[0.04] ring-1 ring-white/[0.06] rounded-lg px-2 py-1 text-xs text-white/60 outline-none cursor-pointer hover:bg-white/[0.06] transition-all appearance-none"
-          >
-            {AVAILABLE_MODELS.map(m => (
-              <option key={m.value} value={m.value} className="bg-[#141417] text-white/80">
-                {m.label}
-              </option>
-            ))}
-          </select>
+            placeholder="deepseek-chat"
+            className="w-28 bg-white/[0.04] ring-1 ring-white/[0.06] rounded-lg px-2 py-1 text-xs text-white/80 placeholder:text-white/20 outline-none focus:ring-white/[0.12] transition-all"
+          />
           <button onClick={startNew} disabled={createConv.isPending} className="text-white/40 hover:text-white/60 transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed">
             <Plus size={20}/>
           </button>
