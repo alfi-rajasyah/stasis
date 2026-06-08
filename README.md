@@ -51,11 +51,37 @@ GOOGLE_CLIENT_ID=xxx.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=GOCSPX-xxx
 ```
 
-## Google OAuth
+## Google OAuth Setup
 
-1. Google Cloud Console → OAuth 2.0 Client ID (Web application)
-2. Redirect URI: `http://localhost:3000/api/auth/callback/google`
-3. Add Client ID + Secret to `.env`
+1. Go to [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
+2. Create an OAuth 2.0 Client ID (Web application)
+3. Add these **Authorized redirect URIs**:
+   ```
+   http://localhost:3000/api/auth/callback/google
+   https://your-domain.com/api/auth/callback/google
+   ```
+4. Copy Client ID and Secret to `.env`
+
+### Proxied deployments (Cloudflare Tunnel, Nginx, etc.)
+
+If your app runs behind a proxy (localhost → public domain), you MUST set
+`AUTH_URL` in `.env`:
+
+```env
+AUTH_URL=https://your-public-domain.com
+```
+
+Without this, Auth.js generates redirect URIs using `localhost` instead of your public domain, causing `redirect_uri_mismatch` errors.
+
+## Troubleshooting
+
+| Error | Fix |
+|---|---|
+| `redirect_uri_mismatch` | Add your domain to Google Cloud Console authorized URIs AND set `AUTH_URL` in `.env` |
+| `UntrustedHost` | Already handled (`trustHost: true` in auth config) |
+| "doesn't comply with Google's OAuth 2.0 policies" | Check `AUTH_URL` matches your actual domain exactly (https://, no trailing slash) |
+| `AUTH_SECRET` required | Generate with `openssl rand -hex 32` |
+| Login page shows tab bar | Fixed — tab bar hides on `/login` route |
 
 ## Docker
 
