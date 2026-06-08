@@ -1,0 +1,10 @@
+formatIDR QA Results
+Date: 2026-06-08
+Command: npx tsx -e "import { formatIDR } from './src/utils/format.ts'; ..."
+
+Input: 0          => "Rp 0"          ✓
+Input: 1000       => "Rp 1.000"      ✓
+Input: 15000000   => "Rp 15.000.000" ✓
+Input: 1000000000 => "Rp 1.000.000.000" ✓
+
+All expected outputs match.
