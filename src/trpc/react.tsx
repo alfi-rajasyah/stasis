@@ -38,7 +38,7 @@ export function TRPCProvider({ children }: { children: React.ReactNode }) {
   const [trpcClient] = useState(() =>
     trpc.createClient({
       links: [
-        (runtime) => {
+        () => {
           return ({ op, next }) => {
             return observable((observer) => {
               return next(op).subscribe({
