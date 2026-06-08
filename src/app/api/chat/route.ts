@@ -1,7 +1,7 @@
 import { streamText } from 'ai';
 import { z } from 'zod';
 import { prisma } from '@/server/db';
-import { getModel, AVAILABLE_MODELS, type SupportedModel } from '@/lib/ai-provider';
+import { getModel, getAIConfig } from '@/lib/ai-provider';
 
 const fmt = (n: number) => 'Rp ' + n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 
@@ -35,11 +35,12 @@ const emptySchema = z.object({});
 
 export async function GET() {
   try {
-    return Response.json({ models: AVAILABLE_MODELS });
+    const config = await getAIConfig(prisma);
+    return Response.json({ config });
   } catch (error) {
-    console.error('Chat models GET error:', error);
+    console.error('Chat config GET error:', error);
     return new Response(
-      JSON.stringify({ error: 'Failed to load model list' }),
+      JSON.stringify({ error: 'Failed to load config' }),
       { status: 500, headers: { 'Content-Type': 'application/json' } },
     );
   }
@@ -48,7 +49,8 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const { messages, conversationId, model } = await req.json();
-    const selectedModel: SupportedModel = model || 'deepseek-chat';
+    const config = await getAIConfig(prisma);
+    const selectedModel = model || config.model || 'deepseek-chat';
     const now = new Date();
     const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
@@ -93,7 +95,7 @@ Current financial snapshot (${month}):
 Use the available tools to help the user. When they describe data in natural language ("Netflix 149k per month"), parse it and create entries. Always confirm what you've done. Keep responses brief and useful.`;
 
     const result = streamText({
-      model: getModel(selectedModel),
+      model: getModel({ baseURL: config.baseURL, apiKey: config.apiKey, model: selectedModel }),
       system: systemPrompt,
       messages: messages.map(({ role, content, tool_call_id, tool_calls }: { role: string; content: string; tool_call_id?: string; tool_calls?: unknown }) => ({
         role,

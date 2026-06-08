@@ -46,7 +46,10 @@ if [ ! -f ".env" ]; then
     echo "     nano .env"
     echo ""
     echo "  Required:"
-    echo "    DEEPSEEK_API_KEY=sk-..."
+    echo "    AI_API_KEY=sk-..."
+    echo "    AI_BASE_URL=https://api.deepseek.com/v1"
+    echo "    AI_MODEL=deepseek-chat"
+    echo "    AI_FALLBACK_MODEL=deepseek-chat"
     echo "    AUTH_SECRET=any-random-string"
     echo "    GOOGLE_CLIENT_ID=xxx.apps.googleusercontent.com"
     echo "    GOOGLE_CLIENT_SECRET=GOCSPX-..."
@@ -58,8 +61,8 @@ fi
 
 # Verify .env has values (not empty)
 source .env 2>/dev/null || true
-if [ -z "$DEEPSEEK_API_KEY" ] || [ "$DEEPSEEK_API_KEY" = "sk-your-key" ]; then
-    echo "  ⚠️  DEEPSEEK_API_KEY not set! Edit .env and re-run."
+if [ -z "$AI_API_KEY" ] || [ "$AI_API_KEY" = "sk-your-key" ] || [ "$AI_API_KEY" = "YOUR_NEW_KEY_HERE" ]; then
+echo "  ⚠️  AI_API_KEY not set! Edit .env and re-run."
     exit 1
 fi
 

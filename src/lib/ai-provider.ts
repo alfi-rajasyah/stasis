@@ -1,39 +1,46 @@
-import { createDeepSeek } from '@ai-sdk/deepseek';
 import { createOpenAI } from '@ai-sdk/openai';
-import { createAnthropic } from '@ai-sdk/anthropic';
 
-export type SupportedModel =
-  | 'deepseek-chat'
-  | 'deepseek-reasoner'
-  | 'gpt-4o'
-  | 'gpt-4o-mini'
-  | 'gpt-4-turbo'
-  | 'o3-mini'
-  | 'claude-3-5-sonnet-latest'
-  | 'claude-3-haiku-latest';
+export type AIConfig = {
+  baseURL: string;
+  model: string;
+  apiKey: string;
+  fallbackModel: string;
+};
 
-export const AVAILABLE_MODELS: { value: SupportedModel; label: string; provider: string }[] = [
-  { value: 'deepseek-chat', label: 'DeepSeek V3', provider: 'DeepSeek' },
-  { value: 'deepseek-reasoner', label: 'DeepSeek R1', provider: 'DeepSeek' },
-  { value: 'gpt-4o-mini', label: 'GPT-4o Mini', provider: 'OpenAI' },
-  { value: 'gpt-4o', label: 'GPT-4o', provider: 'OpenAI' },
-  { value: 'o3-mini', label: 'o3 Mini', provider: 'OpenAI' },
-  { value: 'claude-3-5-sonnet-latest', label: 'Claude 3.5 Sonnet', provider: 'Anthropic' },
-  { value: 'claude-3-haiku-latest', label: 'Claude 3 Haiku', provider: 'Anthropic' },
-];
-
-export function getModel(modelId: SupportedModel) {
-  if (modelId.startsWith('deepseek')) {
-    const deepseek = createDeepSeek({ apiKey: process.env.DEEPSEEK_API_KEY! });
-    return deepseek(modelId as string);
-  }
-  if (modelId.startsWith('gpt') || modelId.startsWith('o1') || modelId.startsWith('o3')) {
-    const openai = createOpenAI({ apiKey: process.env.OPENAI_API_KEY! });
-    return openai(modelId as string);
-  }
-  if (modelId.startsWith('claude')) {
-    const anthropic = createAnthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
-    return anthropic(modelId as string);
-  }
-  throw new Error(`Unknown model: ${modelId}`);
+/**
+ * Creates an OpenAI-compatible model instance using the provided config.
+ * Supports any OpenAI-compatible endpoint (DeepSeek, OpenAI, Anthropic, etc.)
+ */
+export function getModel({ baseURL, apiKey, model }: { baseURL: string; apiKey: string; model: string }) {
+  const openai = createOpenAI({ baseURL, apiKey });
+  return openai(model);
 }
+
+/**
+ * Reads AI config from the Setting model (user overrides) with fallback to process.env.
+ *
+ * Priority: Setting model > process.env > ''
+ */
+export async function getAIConfig(
+  prisma: { setting: { findUnique: (args: { where: { key: string } }) => Promise<{ value: string } | null> } },
+): Promise<AIConfig> {
+  const readSetting = async (key: string, envKey: string): Promise<string> => {
+    const setting = await prisma.setting.findUnique({ where: { key } });
+    return setting?.value ?? process.env[envKey] ?? '';
+  };
+
+  return {
+    baseURL: await readSetting('ai_baseUrl', 'AI_BASE_URL'),
+    model: await readSetting('ai_model', 'AI_MODEL'),
+    apiKey: await readSetting('ai_apiKey', 'AI_API_KEY'),
+    fallbackModel: await readSetting('ai_fallbackModel', 'AI_FALLBACK_MODEL'),
+  };
+}
+
+/** Default env keys for reference */
+export const AI_ENV_DEFAULTS: AIConfig = {
+  baseURL: process.env.AI_BASE_URL ?? 'https://api.deepseek.com/v1',
+  model: process.env.AI_MODEL ?? 'deepseek-chat',
+  apiKey: process.env.AI_API_KEY ?? '',
+  fallbackModel: process.env.AI_FALLBACK_MODEL ?? 'deepseek-chat',
+};

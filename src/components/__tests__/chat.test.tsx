@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen } from '@testing-library/react';
 import ChatPage from '@/app/chat/page';
 import { renderWithProviders } from '@/lib/test-utils';
-import { AVAILABLE_MODELS } from '@/lib/ai-provider';
 
 // --- tRPC mock ---
 const trpcMock = vi.hoisted(() => {
@@ -43,8 +42,10 @@ const trpcMock = vi.hoisted(() => {
       createConversation: { useMutation: vi.fn(createMutation) },
       conversation: { useQuery: vi.fn() },
       addMessages: { useMutation: vi.fn(createMutation) },
+      deleteConversation: { useMutation: vi.fn(createMutation) },
       getSetting: { useQuery: vi.fn() },
       setSetting: { useMutation: vi.fn(createMutation) },
+      getConfig: { useQuery: vi.fn() },
     },
   };
 });
@@ -53,12 +54,19 @@ vi.mock('@/trpc/client', () => ({ trpc: trpcMock }));
 
 // --- AI provider mock (avoid importing AI SDK packages in jsdom) ---
 vi.mock('@/lib/ai-provider', () => ({
-  AVAILABLE_MODELS: [
-    { value: 'deepseek-chat', label: 'DeepSeek V3', provider: 'DeepSeek' },
-    { value: 'deepseek-reasoner', label: 'DeepSeek R1', provider: 'DeepSeek' },
-    { value: 'gpt-4o-mini', label: 'GPT-4o Mini', provider: 'OpenAI' },
-    { value: 'claude-3-5-sonnet-latest', label: 'Claude 3.5 Sonnet', provider: 'Anthropic' },
-  ],
+  getModel: vi.fn(() => ({})),
+  getAIConfig: vi.fn(() => Promise.resolve({
+    baseURL: 'https://api.deepseek.com/v1',
+    model: 'deepseek-chat',
+    apiKey: '',
+    fallbackModel: 'deepseek-chat',
+  })),
+  AI_ENV_DEFAULTS: {
+    baseURL: 'https://api.deepseek.com/v1',
+    model: 'deepseek-chat',
+    apiKey: '',
+    fallbackModel: 'deepseek-chat',
+  },
 }));
 
 // --- Tests ---
@@ -108,26 +116,5 @@ describe('ChatPage', () => {
     expect(screen.getByText('Investment questions')).toBeInTheDocument();
   });
 
-  it('renders model options from AVAILABLE_MODELS config', () => {
-    // The model selector is rendered in the active conversation view only.
-    // Since conversationId is internal state (initialized to null), we verify
-    // that the data driving the dropdown is correctly structured.
-    expect(AVAILABLE_MODELS).toHaveLength(4);
-    expect(AVAILABLE_MODELS[0]).toEqual({
-      value: 'deepseek-chat',
-      label: 'DeepSeek V3',
-      provider: 'DeepSeek',
-    });
-    expect(AVAILABLE_MODELS[1]).toEqual({
-      value: 'deepseek-reasoner',
-      label: 'DeepSeek R1',
-      provider: 'DeepSeek',
-    });
 
-    for (const model of AVAILABLE_MODELS) {
-      expect(model).toHaveProperty('value');
-      expect(model).toHaveProperty('label');
-      expect(model).toHaveProperty('provider');
-    }
-  });
 });
