@@ -86,7 +86,9 @@ export default function BudgetPage() {
       {/* Allocations */}
       <div className="rounded-2xl bg-white/[0.03] ring-1 ring-white/[0.05] p-5 space-y-6">
         <p className="text-xs font-medium text-white/40 uppercase tracking-wider">Allocations</p>
-        {budget?.categories.map((cat) => {
+        {budget?.categories
+          .filter((cat, index, self) => self.findIndex(c => c.name === cat.name) === index)
+          .map((cat) => {
           const pct = totalIncome > 0 ? Math.min(100, Math.round((cat.allocated / totalIncome) * 100)) : 0;
           return (
             <div key={cat.id} className="space-y-2">

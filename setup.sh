@@ -73,7 +73,7 @@ echo ""
 echo "[5/5] Setting up database..."
 mkdir -p data
 npx prisma migrate dev --name init 2>/dev/null || npx prisma migrate deploy
-npx prisma db seed 2>/dev/null || echo "  Seed already applied, skipping"
+# Seed is manual: `npx prisma db seed` (omitted so first deploy starts empty)
 
 # ── 6. Build and start ──
 echo ""

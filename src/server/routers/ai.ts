@@ -15,6 +15,7 @@ export const aiRouter = router({
 
     return conversations.map(c => ({
       id: c.id,
+      title: c.title,
       createdAt: c.createdAt,
       messages: c.messages.map(m => ({
         role: m.role,
@@ -61,6 +62,15 @@ export const aiRouter = router({
       })),
     }))
     .mutation(async ({ ctx, input }) => {
+      // Auto-title from first user message if not already set
+      const firstUserMsg = input.messages.find(m => m.role === 'user');
+      if (firstUserMsg) {
+        await ctx.prisma.aiConversation.updateMany({
+          where: { id: input.conversationId, title: null },
+          data: { title: firstUserMsg.content.slice(0, 40) },
+        });
+      }
+
       for (const msg of input.messages) {
         await ctx.prisma.aiMessage.create({
           data: {

@@ -34,7 +34,15 @@ const incomeSchema = z.object({
 const emptySchema = z.object({});
 
 export async function GET() {
-  return Response.json({ models: AVAILABLE_MODELS });
+  try {
+    return Response.json({ models: AVAILABLE_MODELS });
+  } catch (error) {
+    console.error('Chat models GET error:', error);
+    return new Response(
+      JSON.stringify({ error: 'Failed to load model list' }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } },
+    );
+  }
 }
 
 export async function POST(req: Request) {
@@ -47,6 +55,12 @@ export async function POST(req: Request) {
     // Save user message if conversationId is provided
     const lastMsg = messages?.[messages.length - 1];
     if (conversationId && lastMsg?.role === 'user') {
+      // Auto-title from first user message if not already set
+      await prisma.aiConversation.updateMany({
+        where: { id: conversationId, title: null },
+        data: { title: lastMsg.content.slice(0, 40) },
+      });
+
       await prisma.aiMessage.create({
         data: { conversationId, role: 'user', content: lastMsg.content },
       });

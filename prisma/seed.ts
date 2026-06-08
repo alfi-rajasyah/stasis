@@ -4,6 +4,13 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function main() {
+  // Idempotency: skip if categories already exist
+  const existingCategories = await prisma.category.count();
+  if (existingCategories > 0) {
+    console.log(`Found ${existingCategories} existing categories, skipping seed.`);
+    return;
+  }
+
   const now = new Date();
   const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 

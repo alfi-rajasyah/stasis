@@ -149,7 +149,7 @@ export default function ChatPage() {
                 className="w-full rounded-2xl bg-white/[0.02] ring-1 ring-white/[0.04] p-4 text-left hover:bg-white/[0.04] transition-all cursor-pointer"
               >
                 <p className="text-sm text-white/60">
-                  {c.messages[0]?.content?.slice(0, 60) || 'New conversation'}
+                  {c.title || 'New conversation'}
                 </p>
                 <p className="text-xs text-white/20 mt-1">
                   {new Date(c.createdAt).toLocaleDateString()}
