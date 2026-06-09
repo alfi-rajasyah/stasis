@@ -1,6 +1,6 @@
 # Stasis
 
-Personal finance manager. Track subscriptions, bills, debts, and budget — with AI assistance.
+Personal finance manager. Track subscriptions, bills, debts, and budget.
 
 ## Features
 
@@ -9,7 +9,6 @@ Personal finance manager. Track subscriptions, bills, debts, and budget — with
 - **Subscription Tracker** — Recurring subs with monthly burn total
 - **Bill Tracker** — Bills with due dates and paid/unpaid status
 - **Debt Tracker** — Principal, interest, payoff projections
-- **AI Assistant** — Natural language entry (DeepSeek, OpenAI, Anthropic)
 - **Google OAuth** — Secure login with your Google account
 - **PWA** — Install on phone, works offline
 - **Dark mode** — Dark premium design throughout
@@ -27,7 +26,6 @@ Personal finance manager. Track subscriptions, bills, debts, and budget — with
 | Database | SQLite via Prisma |
 | API | tRPC |
 | Auth | Auth.js (Google) |
-| AI | Vercel AI SDK |
 | PWA | next-pwa |
 | Deploy | Docker |
 
@@ -67,7 +65,6 @@ pm2 restart stasis
 
 ```env
 DATABASE_URL=file:./data/stasis.db
-DEEPSEEK_API_KEY=sk-xxx
 AUTH_SECRET=$(openssl rand -hex 32)
 GOOGLE_CLIENT_ID=xxx.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=GOCSPX-xxx

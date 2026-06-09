@@ -6,9 +6,5 @@ services:
     volumes:
       - ./data:/app/data
     environment:
-      - AI_BASE_URL=${AI_BASE_URL}
-      - AI_MODEL=${AI_MODEL}
-      - AI_API_KEY=${AI_API_KEY}
-      - AI_FALLBACK_MODEL=${AI_FALLBACK_MODEL}
       - DATABASE_URL=file:/app/data/stasis.db
     restart: unless-stopped
