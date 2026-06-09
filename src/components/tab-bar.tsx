@@ -2,13 +2,12 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Wallet, ClipboardList, MessageSquare, Settings } from 'lucide-react';
+import { LayoutDashboard, Wallet, ClipboardList, Settings } from 'lucide-react';
 
 const tabs = [
   { href: '/', label: 'Home', Icon: LayoutDashboard },
   { href: '/budget', label: 'Budget', Icon: Wallet },
   { href: '/trackers', label: 'Trackers', Icon: ClipboardList },
-  { href: '/chat', label: 'Chat', Icon: MessageSquare },
   { href: '/settings', label: 'Settings', Icon: Settings },
 ];
 

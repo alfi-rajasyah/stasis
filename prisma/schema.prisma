@@ -119,26 +119,4 @@ model DebtPayment {
   createdAt   DateTime @default(now())
 }
 
-model AiConversation {
-  id        String      @id @default(cuid())
-  title     String?
-  createdAt DateTime    @default(now())
-  messages  AiMessage[]
-}
 
-model AiMessage {
-  id             String        @id @default(cuid())
-  conversationId String
-  conversation   AiConversation @relation(fields: [conversationId], references: [id])
-  role           String
-  content        String?
-  toolName       String?
-  toolArgs       String?
-  toolResult     String?
-  createdAt      DateTime      @default(now())
-}
-
-model Setting {
-  key   String @id
-  value String
-}

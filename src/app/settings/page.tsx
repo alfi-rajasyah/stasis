@@ -1,8 +1,8 @@
 'use client';
 
 import { trpc } from '@/trpc/client';
-import { useState, useEffect } from 'react';
-import { Plus, Tag, Globe, Cpu, Info, Trash2, PackageOpen, Pencil, Wallet, ChevronDown, ChevronUp } from 'lucide-react';
+import { useState } from 'react';
+import { Plus, Tag, Globe, Info, Trash2, PackageOpen, Pencil, Wallet, ChevronDown, ChevronUp } from 'lucide-react';
 import { toast } from 'sonner';
 import { Swipeable } from '@/components/swipeable';
 import { formatIDR } from '@/utils/format';
@@ -110,28 +110,6 @@ export default function SettingsPage() {
   const [newColor, setNewColor] = useState('#10B981');
   const [showAdd, setShowAdd] = useState(false);
   const [categoriesOpen, setCategoriesOpen] = useState(false);
-
-  // ── AI Provider state ──
-  const [aiModel, setAiModel] = useState('');
-  const [aiSaving, setAiSaving] = useState(false);
-  const { data: aiConfig } = trpc.ai.getConfig.useQuery();
-  const setAiSetting = trpc.ai.setSetting.useMutation();
-  const aiUtils = trpc.useUtils();
-
-  useEffect(() => {
-    if (aiConfig) setAiModel(aiConfig.saved.model);
-  }, [aiConfig]);
-
-  async function handleAiSave() {
-    setAiSaving(true);
-    try {
-      await setAiSetting.mutateAsync({ key: 'ai_model', value: aiModel });
-      aiUtils.ai.getConfig.invalidate();
-      toast.success('Model preference saved');
-    } catch {
-      toast.error('Failed to save');
-    } finally { setAiSaving(false); }
-  }
 
   // ── Income state ──
   const [showAddIncome, setShowAddIncome] = useState(false);
@@ -326,36 +304,6 @@ export default function SettingsPage() {
         )}
           </>
         )}
-      </div>
-
-      {/* AI Provider */}
-      <div className="rounded-2xl bg-white/[0.03] ring-1 ring-white/[0.05] p-5 space-y-4">
-        <div className="flex items-center gap-2.5">
-          <Cpu size={18} className="text-white/40" />
-          <h2 className="text-sm font-medium text-white/60">AI Provider</h2>
-        </div>
-
-        <div>
-          <label className="text-xs text-white/40 mb-1 block pl-8">Model</label>
-          <input
-            value={aiModel}
-            onChange={e => setAiModel(e.target.value)}
-            placeholder={aiConfig?.defaults.model ?? 'deepseek-chat'}
-            className="w-full bg-white/[0.04] ring-1 ring-white/[0.06] rounded-xl px-3 py-2 text-sm text-white/80 placeholder:text-white/20 outline-none focus:ring-white/[0.12] transition-all"
-          />
-        </div>
-
-        <p className="text-xs text-white/30 pl-8">Base URL and API key are configured via .env</p>
-
-        <div className="pl-8">
-          <button
-            onClick={handleAiSave}
-            disabled={aiSaving}
-            className="rounded-xl bg-emerald-500/10 ring-1 ring-emerald-500/20 text-emerald-400 px-4 py-2 text-sm font-medium hover:bg-emerald-500/20 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {aiSaving ? 'Saving...' : 'Save'}
-          </button>
-        </div>
       </div>
 
       {/* About */}

@@ -1,14 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { trpc } from '@/trpc/client';
 import { formatIDR } from '@/utils/format';
-import Link from 'next/link';
-import { Sparkles } from 'lucide-react';
 
 export default function DashboardPage() {
   const { data, isLoading } = trpc.dashboard.getSummary.useQuery();
-  const [insight, setInsight] = useState<string | null>(null);
 
   const income = data?.income ?? 0;
   const committed = data?.committed ?? 0;
@@ -16,24 +12,6 @@ export default function DashboardPage() {
   const committedPercent = data?.committedPercent;
   const upcomingDues = data?.upcomingDues ?? [];
   const debts = data?.debts ?? [];
-
-  useEffect(() => {
-    if (!data) return;
-    const tips: string[] = [];
-    if (committedPercent && committedPercent > 50) {
-      tips.push(`${committedPercent}% of your income is committed. Consider reviewing subscriptions.`);
-    }
-    if (free > 0) {
-      tips.push(`You have ${formatIDR(free)} free this month.`);
-    }
-    if (debts.length > 0) {
-      const d = debts[0];
-      if (d.monthsRemaining) {
-        tips.push(`"${d.name}" will be paid off in ~${d.monthsRemaining} months.`);
-      }
-    }
-    setInsight(tips.length > 0 ? tips[Math.floor(Math.random() * tips.length)] : null);
-  }, [data, committedPercent, free, debts]);
 
   if (isLoading) {
     return (
@@ -138,23 +116,7 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {/* AI Insights */}
-      {insight && (
-        <div className="rounded-2xl bg-white/[0.02] ring-1 ring-white/[0.04] p-5">
-          <div className="flex items-start gap-3">
-            <Sparkles size={18} className="text-emerald-400 flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-white/60 leading-relaxed">{insight}</p>
-          </div>
-        </div>
-      )}
 
-      {/* Floating AI */}
-      <Link
-        href="/chat"
-        className="fixed bottom-24 right-5 z-50 flex items-center justify-center w-12 h-12 rounded-2xl bg-white/[0.06] backdrop-blur-md ring-1 ring-white/[0.06] hover:bg-white/[0.10] transition-all duration-200 cursor-pointer"
-      >
-        <Sparkles size={20} className="text-emerald-400" />
-      </Link>
     </div>
   );
 }

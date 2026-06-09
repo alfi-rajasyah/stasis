@@ -22,17 +22,16 @@ describe('TabBar', () => {
     vi.mocked(usePathname).mockClear();
   });
 
-  it('renders 5 navigation links with correct labels', () => {
+  it('renders 4 navigation links with correct labels', () => {
     vi.mocked(usePathname).mockReturnValue('/');
     renderWithProviders(<TabBar />);
 
     const links = screen.getAllByRole('link');
-    expect(links).toHaveLength(5);
+    expect(links).toHaveLength(4);
     expect(links[0]).toHaveTextContent('Home');
     expect(links[1]).toHaveTextContent('Budget');
     expect(links[2]).toHaveTextContent('Trackers');
-    expect(links[3]).toHaveTextContent('Chat');
-    expect(links[4]).toHaveTextContent('Settings');
+    expect(links[3]).toHaveTextContent('Settings');
   });
 
   it('highlights the active route', () => {
