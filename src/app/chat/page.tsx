@@ -41,14 +41,6 @@ export default function ChatPage() {
   }, [activeConv]);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'auto' });
-  }, [conversationId, activeConv]);
-
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-
-  useEffect(() => {
     inputRef.current?.focus();
   }, []);
 
@@ -233,7 +225,7 @@ export default function ChatPage() {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
+      <div className="flex-1 overflow-y-auto overflow-anchor-auto px-5 py-4 space-y-4">
         {messages.map((msg, i) => (
           <div
             key={i}
